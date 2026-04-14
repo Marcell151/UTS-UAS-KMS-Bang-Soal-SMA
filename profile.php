@@ -3,18 +3,24 @@
 $pageTitle = 'Profil Pengguna';
 require_once 'includes/header.php';
 
-$userId = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT u.*, r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?");
-$stmt->execute([$userId]);
+$identityId = getIdentityId();
+$actorType = $_SESSION['actor_type'];
+
+if ($actorType === ACTOR_STAFF) {
+    $stmt = $pdo->prepare("SELECT s.*, r.role_name FROM staff s JOIN roles r ON s.role_id = r.id WHERE s.identity_id = ?");
+} else {
+    $stmt = $pdo->prepare("SELECT *, 'Guru' as role_name FROM teachers WHERE identity_id = ?");
+}
+$stmt->execute([$identityId]);
 $user = $stmt->fetch();
 
 // Fetch activity counts
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM documents WHERE uploader_id = ?");
-$stmt->execute([$userId]);
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM questions WHERE uploader_id = ?");
+$stmt->execute([$identityId]);
 $qc = $stmt->fetchColumn();
 
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM forum_topics WHERE user_id = ?");
-$stmt->execute([$userId]);
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM forum_topics WHERE actor_id = ?");
+$stmt->execute([$identityId]);
 $ftc = $stmt->fetchColumn();
 ?>
 
@@ -23,7 +29,7 @@ $ftc = $stmt->fetchColumn();
         <div class="h-48 bg-primary relative">
             <div class="absolute -bottom-12 left-12 w-32 h-32 rounded-3xl bg-white p-2 shadow-lg">
                 <div class="w-full h-full bg-blue-100 rounded-2xl flex items-center justify-center text-primary text-4xl font-bold">
-                    <?php echo strtoupper(substr($user['username'], 0, 1)); ?>
+                    <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
                 </div>
             </div>
         </div>
@@ -32,7 +38,10 @@ $ftc = $stmt->fetchColumn();
             <div class="flex justify-between items-start mb-8">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-900"><?php echo $user['full_name']; ?></h2>
-                    <p class="text-gray-500 font-medium mt-1">@<?php echo $user['username']; ?> • <span class="text-primary"><?php echo $user['role_name']; ?></span></p>
+                    <p class="text-gray-500 font-medium mt-1">
+                        <?php if (isset($user['username'])): ?>@<?php echo $user['username']; ?> • <?php endif; ?>
+                        <span class="text-primary"><?php echo $user['role_name']; ?></span>
+                    </p>
                 </div>
                 <button class="px-6 py-2 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition">Edit Profil</button>
             </div>
