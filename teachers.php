@@ -4,7 +4,7 @@ $pageTitle = 'Manajemen Personel Guru';
 require_once 'includes/header.php';
 
 // Check Role: Only Admin Akademik (Administrasi) can manage teachers
-checkRoleId([ROLE_ADMIN_AKADEMIK]);
+checkRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
 
 $message = '';
 $error = '';

@@ -5,7 +5,7 @@ require_once 'includes/header.php';
 
 // Check Role: Tacit knowledge sharing is for academic staff (Guru & Admin Akademik)
 // Kepala Sekolah is restricted from participating in general forum discussions
-checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK]);
+checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
 
 $message = '';
 
@@ -41,15 +41,17 @@ $stmt = $pdo->query("SELECT ft.*,
 $topics = $stmt->fetchAll();
 ?>
 
-<div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 italic">
+<div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
     <div>
         <h3 class="text-3xl font-bold text-gray-900 leading-none">Forum Kolaborasi</h3>
         <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mt-3 italic">Tacit Knowledge Sharing • Ruang Berbagi Rekan Sejawat</p>
     </div>
+    <?php if (hasRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK])): ?>
     <button onclick="document.getElementById('topicModal').classList.remove('hidden')" class="bg-primary text-white px-8 py-4 rounded-[20px] font-bold hover:bg-black transition shadow-xl shadow-blue-100 flex items-center group">
         <svg class="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
         Mulai Diskusi Baru
     </button>
+    <?php endif; ?>
 </div>
 
 <?php if ($message): ?>
@@ -59,7 +61,7 @@ $topics = $stmt->fetchAll();
 </div>
 <?php endif; ?>
 
-<div class="bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden mb-12 italic">
+<div class="bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden mb-12">
     <div class="p-8 border-b border-gray-50 bg-gray-50/30 text-[10px] font-bold text-gray-400 uppercase tracking-widest flex px-12">
         <div class="flex-1">Topik & Konteks Diskusi</div>
         <div class="w-32 text-center">Interaksi</div>
@@ -105,7 +107,7 @@ $topics = $stmt->fetchAll();
 
 <!-- Modal Topic -->
 <div id="topicModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[40px] max-w-lg w-full p-12 shadow-2xl relative overflow-hidden italic">
+    <div class="bg-white rounded-[40px] max-w-lg w-full p-12 shadow-2xl relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
         <h3 class="text-3xl font-bold text-gray-900 mb-2 leading-none">Mulai Kolaborasi</h3>
         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-10">Bagikan pemahaman atau diskusikan strategi akademik</p>

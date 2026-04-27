@@ -4,7 +4,7 @@ $pageTitle = 'Diskusi Kolaboratif';
 require_once 'includes/header.php';
 
 // Check Role: Tacit knowledge sharing is for academic staff (Guru & Admin Akademik)
-checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK]);
+checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
 
 $topic_id = $_GET['id'] ?? null;
 if (!$topic_id) {
@@ -73,7 +73,7 @@ $stmt->execute([$topic_id]);
 $replies = $stmt->fetchAll();
 ?>
 
-<div class="max-w-5xl mx-auto space-y-10 italic">
+<div class="max-w-5xl mx-auto space-y-10">
     <!-- Question/Topic Header -->
     <div class="bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden">
         <div class="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
@@ -134,6 +134,7 @@ $replies = $stmt->fetchAll();
     </div>
 
     <!-- Reply Form (Premium Dark Block) -->
+    <?php if (hasRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK])): ?>
     <div class="bg-gray-900 rounded-[48px] p-12 text-white shadow-2xl relative overflow-hidden group">
         <div class="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-[120px] opacity-20"></div>
         <div class="relative z-10">
@@ -146,7 +147,7 @@ $replies = $stmt->fetchAll();
             <form action="" method="POST" class="space-y-8">
                 <textarea name="message" required rows="5" placeholder="Bagikan wawasan, solusi, atau pengalaman akademik Anda di sini..." class="w-full bg-white bg-opacity-[0.03] border border-white border-opacity-5 rounded-[28px] p-8 text-base text-white focus:bg-opacity-[0.06] focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-600 transition shadow-inner"></textarea>
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest italic flex items-center">
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center">
                         <svg class="w-3 h-3 mr-2 text-primary" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                         Partisipasi Anda berkontribusi pada aset Tacit sekolah
                     </p>
@@ -155,6 +156,7 @@ $replies = $stmt->fetchAll();
             </form>
         </div>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php require_once 'includes/footer.php'; ?>

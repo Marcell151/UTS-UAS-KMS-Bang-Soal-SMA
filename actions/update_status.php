@@ -4,8 +4,9 @@ require_once '../config/constants.php';
 require_once '../config/database.php';
 require_once '../includes/auth.php';
 
-// Only Admin Akademik and Kepala Sekolah can update status
-checkRoleId([ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK]);
+// Only Admin Akademik can update status to Verified
+// Kepala Sekolah is Monitoring-only (Read-only for status change)
+checkRoleId([ROLE_ADMIN_AKADEMIK]); 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $question_id = $_POST['question_id'];
@@ -19,13 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Status tidak valid.");
     }
 
-    // Role-based status restrictions
-    if ($role_id == ROLE_ADMIN_AKADEMIK && !in_array($new_status, [STATUS_DRAFT, STATUS_REVIEW])) {
-        die("Admin Akademik hanya dapat mengajukan Review atau mengembalikan ke Draft.");
-    }
-
-    if ($role_id == ROLE_KEPSEK && !in_array($new_status, [STATUS_REVIEW, STATUS_VERIFIED])) {
-        die("Kepala Sekolah hanya dapat memverifikasi atau mengembalikan ke status Review.");
+    // Role-based status restrictions (Now refined)
+    // Admin Akademik (ROLE 2) is the primary verifier
+    if ($role_id != ROLE_ADMIN_AKADEMIK) {
+        die("Hanya Admin Akademik yang dapat melakukan perubahan status validasi.");
     }
 
     try {

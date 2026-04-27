@@ -4,7 +4,7 @@ $pageTitle = 'Tata Kelola Domain Pengetahuan';
 require_once 'includes/header.php';
 
 // Check Role: Admin Akademik / Administrasi focus on academic categories
-checkRoleId([ROLE_ADMIN_AKADEMIK]);
+checkRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
 
 $message = '';
 $error = '';

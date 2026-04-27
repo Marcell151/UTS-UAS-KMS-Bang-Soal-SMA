@@ -87,7 +87,7 @@ if ($q['status'] == STATUS_REVIEW) $progress = 66;
 if ($q['status'] == STATUS_VERIFIED) $progress = 100;
 ?>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 italic">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 space-y-8">
         <!-- Main Content -->
         <div class="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
@@ -140,7 +140,7 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Pembahasan (Explicit Knowledge)
                     </h3>
-                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 text-gray-700 leading-relaxed italic prose max-w-none shadow-inner">
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 text-gray-700 leading-relaxed prose max-w-none shadow-inner">
                         <?php echo $q['explanation']; ?>
                     </div>
                 </div>
@@ -175,7 +175,7 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                 <?php endforeach; ?>
             </div>
 
-            <?php if (!hasRoleId([ROLE_KEPSEK])): ?>
+            <?php if (hasRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK])): ?>
             <form action="" method="POST" class="mt-8 pt-8 border-t border-gray-100 space-y-4">
                 <textarea name="comment" required placeholder="Tuliskan saran, feedback, atau wawasan tambahan terkait soal ini..." class="w-full px-6 py-4 bg-gray-50 border-none rounded-3xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition shadow-inner"></textarea>
                 <div class="text-right">
@@ -193,31 +193,30 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
     <!-- Right Sidebar -->
     <div class="space-y-8">
         <!-- Status Update Controls -->
-        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK])): ?>
+        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK])): ?>
         <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Alur Validasi</h4>
+            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Kontrol Validasi (Admin Akademik)</h4>
             <form action="actions/update_status.php" method="POST" class="space-y-4">
                 <input type="hidden" name="question_id" value="<?php echo $id; ?>">
                 <div>
                     <label class="block text-[10px] text-gray-400 font-bold uppercase mb-2">Ubah Status</label>
                     <select name="status" class="w-full px-4 py-3 border border-gray-100 bg-gray-50 rounded-2xl outline-none text-sm focus:ring-2 focus:ring-blue-500">
-                        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK])): ?>
-                            <option value="<?php echo STATUS_DRAFT; ?>" <?php echo $q['status'] == STATUS_DRAFT ? 'selected' : ''; ?>>Kembalikan ke Draft</option>
-                            <option value="<?php echo STATUS_REVIEW; ?>" <?php echo $q['status'] == STATUS_REVIEW ? 'selected' : ''; ?>>Ajukan Review (Ke Kepsek)</option>
-                        <?php endif; ?>
-                        
-                        <?php if (hasRoleId([ROLE_KEPSEK])): ?>
-                            <option value="<?php echo STATUS_REVIEW; ?>" <?php echo $q['status'] == STATUS_REVIEW ? 'selected' : ''; ?>>Pending / Review</option>
-                            <option value="<?php echo STATUS_VERIFIED; ?>" <?php echo $q['status'] == STATUS_VERIFIED ? 'selected' : ''; ?>>Verify Soal (ACC)</option>
-                        <?php endif; ?>
+                        <option value="<?php echo STATUS_DRAFT; ?>" <?php echo $q['status'] == STATUS_DRAFT ? 'selected' : ''; ?>>Kembalikan ke Draft</option>
+                        <option value="<?php echo STATUS_REVIEW; ?>" <?php echo $q['status'] == STATUS_REVIEW ? 'selected' : ''; ?>>Review Ulang</option>
+                        <option value="<?php echo STATUS_VERIFIED; ?>" <?php echo $q['status'] == STATUS_VERIFIED ? 'selected' : ''; ?>>Verifikasi Soal (ACC)</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] text-gray-400 font-bold uppercase mb-2">Catatan Perubahan</label>
                     <textarea name="notes" placeholder="Berikan alasan atau feedback..." class="w-full px-4 py-3 border border-gray-100 bg-gray-50 rounded-2xl outline-none text-sm min-h-[100px]"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition shadow-xl">Simpan Status</button>
+                <button type="submit" class="w-full bg-primary text-white py-4 rounded-2xl font-bold hover:bg-black transition shadow-xl">Simpan & Perbarui Status</button>
             </form>
+        </div>
+        <?php elseif (hasRoleId([ROLE_KEPSEK])): ?>
+        <div class="bg-blue-50 rounded-3xl border border-blue-100 p-8 shadow-sm">
+            <h4 class="text-[10px] font-bold text-primary uppercase tracking-widest mb-4">Monitoring Kepala Sekolah</h4>
+            <p class="text-xs text-gray-600 leading-relaxed italic">Status validasi dikelola sepenuhnya oleh Admin Akademik. Anda memiliki akses untuk memantau perkembangan dan kualitas aset pengetahuan ini.</p>
         </div>
         <?php endif; ?>
 

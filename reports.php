@@ -4,7 +4,7 @@ $pageTitle = 'Laporan Knowledge Management';
 require_once 'includes/header.php';
 
 // Check Role: Only Admin Akademik and Kepala Sekolah can access reports
-checkRoleId([ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK]);
+checkRoleId([ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK, ROLE_ADMIN_SISTEM]);
 
 // Stats per Category
 $stmt = $pdo->query("SELECT c.name, COUNT(q.id) as total 
@@ -31,12 +31,12 @@ $stmt = $pdo->query("SELECT
 $topContributors = $stmt->fetchAll();
 ?>
 
-<div class="mb-10 italic">
+<div class="mb-10">
     <h3 class="text-3xl font-bold text-gray-900 leading-none">Analitik Aset Pengetahuan</h3>
     <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mt-3 italic">Laporan Konsolidasi Bank Soal SMA Kristen Kalam Kudus Malang</p>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-10 italic">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
     <div class="lg:col-span-2 bg-white rounded-[48px] border border-gray-100 shadow-xl overflow-hidden p-10">
         <h3 class="text-xl font-bold text-gray-900 mb-10 flex items-center">
             <svg class="w-6 h-6 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
@@ -104,7 +104,7 @@ $topContributors = $stmt->fetchAll();
     </div>
 </div>
 
-<div class="mt-12 bg-white rounded-[56px] border border-gray-100 shadow-xl p-12 overflow-hidden italic">
+<div class="mt-12 bg-white rounded-[56px] border border-gray-100 shadow-xl p-12 overflow-hidden">
     <div class="flex justify-between items-center mb-10">
         <div>
             <h3 class="text-2xl font-bold text-gray-900 leading-none">Audit Trail Sistem</h3>

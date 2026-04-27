@@ -51,7 +51,7 @@ $templates = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'Template' ORD
 $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY created_at DESC")->fetchAll();
 ?>
 
-<div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 italic">
+<div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
     <div>
         <h3 class="text-3xl font-bold text-gray-900 leading-none">Pusat Pengetahuan Eksplisit</h3>
         <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mt-3 italic">SMA Kristen Kalam Kudus Malang • SOP & Template Resmi</p>
@@ -64,7 +64,7 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
     <?php endif; ?>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-10 italic">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
     <!-- Templates Section -->
     <div class="bg-white rounded-[48px] border border-gray-100 shadow-xl overflow-hidden p-10">
         <div class="flex items-center space-x-5 mb-10">
@@ -145,7 +145,7 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
 
 <!-- Upload Modal -->
 <div id="uploadModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-[40px] max-w-lg w-full p-12 shadow-2xl relative overflow-hidden italic">
+    <div class="bg-white rounded-[40px] max-w-lg w-full p-12 shadow-2xl relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
         <h3 class="text-3xl font-bold text-gray-900 mb-2 leading-none">Kontribusi KMS</h3>
         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-10">Upload SOP atau Template Soal Baru</p>

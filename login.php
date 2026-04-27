@@ -80,101 +80,114 @@ $all_teachers = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - KMS Bank Soal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Manrope:wght@800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#003366', // Kalam Kudus Navy
+                        accent: '#E30613',  // Kalam Kudus Red
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
-        .bg-primary { background-color: #0053dc; }
-        .text-primary { color: #0053dc; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
-        .italic-force { font-style: italic !important; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
 </head>
-<body class="bg-[#f8fafc] flex items-center justify-center min-h-screen p-6 relative overflow-hidden italic-force">
-    <!-- Decorative Orbs -->
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[120px] opacity-60"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-100 rounded-full blur-[120px] opacity-60"></div>
+<body class="bg-[#F8FAFC] flex items-center justify-center min-h-screen p-6 relative overflow-hidden">
+    <!-- Decorative Accents -->
+    <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100 rounded-full blur-[120px] opacity-40"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-50 rounded-full blur-[120px] opacity-40"></div>
 
     <div class="max-w-md w-full relative z-10">
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-2xl shadow-blue-100 mb-6 group hover:scale-110 transition-transform duration-500">
-                <svg class="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-28 h-28 bg-white rounded-[40px] shadow-2xl shadow-blue-100 mb-8 p-6 border border-gray-50">
+                <img src="upload/logo/Logo.png" alt="Logo Kalam Kudus" class="w-full h-auto object-contain">
             </div>
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight leading-none italic-force">KMS Bank Soal</h1>
-            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em] mt-4 italic-force">SMA Kristen Kalam Kudus Malang</p>
+            <h1 class="text-4xl font-black text-[#003366] tracking-tighter leading-none">Portal KMS</h1>
+            <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.4em] mt-4">SMA Kristen Kalam Kudus Malang</p>
         </div>
 
-        <div class="bg-white rounded-[40px] shadow-2xl shadow-blue-100 border border-gray-100 p-10 relative overflow-hidden">
+        <div class="bg-white rounded-[48px] shadow-2xl shadow-blue-100 border border-gray-100 p-12">
             <!-- Mode Switcher -->
-            <div class="flex p-1.5 bg-gray-50 rounded-[24px] mb-10 shadow-inner">
+            <div class="flex p-2 bg-gray-50 rounded-[32px] mb-12">
                 <button onclick="switchMode('<?php echo LOGIN_MODE_STANDARD; ?>')" id="tab-standard" 
-                    class="flex-1 py-3.5 rounded-[20px] text-[11px] font-bold uppercase tracking-widest transition-all duration-300 <?php echo $login_mode == LOGIN_MODE_STANDARD ? 'bg-white shadow-lg text-primary' : 'text-gray-400 hover:text-gray-600'; ?>">
-                    Pimpinan & Staf
+                    class="flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all duration-300 <?php echo $login_mode == LOGIN_MODE_STANDARD ? 'bg-white shadow-lg text-[#003366]' : 'text-gray-400 hover:text-gray-600'; ?>">
+                    Staf & Pimpinan
                 </button>
                 <button onclick="switchMode('<?php echo LOGIN_MODE_PIN; ?>')" id="tab-pin" 
-                    class="flex-1 py-3.5 rounded-[20px] text-[11px] font-bold uppercase tracking-widest transition-all duration-300 <?php echo $login_mode == LOGIN_MODE_PIN ? 'bg-white shadow-lg text-primary' : 'text-gray-400 hover:text-gray-600'; ?>">
-                    Login Guru (PIN)
+                    class="flex-1 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all duration-300 <?php echo $login_mode == LOGIN_MODE_PIN ? 'bg-white shadow-lg text-[#003366]' : 'text-gray-400 hover:text-gray-600'; ?>">
+                    Portal Guru
                 </button>
             </div>
 
             <?php if ($error): ?>
-                <div class="mb-8 p-5 bg-red-50 border border-red-100 rounded-3xl text-red-600 text-xs font-bold italic-force flex items-center">
-                    <svg class="w-4 h-4 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div class="mb-10 p-6 bg-red-50 border border-red-100 rounded-3xl text-red-600 text-xs font-bold flex items-center">
+                    <svg class="w-5 h-5 mr-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     <?php echo $error; ?>
                 </div>
             <?php endif; ?>
 
-            <form action="" method="POST" id="loginForm" class="space-y-6">
+            <form action="" method="POST" id="loginForm" class="space-y-8">
                 <input type="hidden" name="login_mode" id="login_mode" value="<?php echo $login_mode; ?>">
 
                 <!-- Standard UI (STAFF Table) -->
-                <div id="standard-fields" class="<?php echo $login_mode == LOGIN_MODE_STANDARD ? '' : 'hidden'; ?> space-y-6">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Username</label>
-                        <input type="text" name="username" placeholder="Masukkan username" 
-                            class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner italic-force">
+                <div id="standard-fields" class="<?php echo $login_mode == LOGIN_MODE_STANDARD ? '' : 'hidden'; ?> space-y-8">
+                    <div class="space-y-3">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Username / ID</label>
+                        <input type="text" name="username" placeholder="Masukkan ID pengguna" 
+                            class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
                     </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                    <div class="space-y-3">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kata Sandi</label>
                         <input type="password" name="password" placeholder="••••••••" 
-                            class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner italic-force">
+                            class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
                     </div>
                 </div>
 
                 <!-- PIN UI (TEACHERS Table) -->
-                <div id="pin-fields" class="<?php echo $login_mode == LOGIN_MODE_PIN ? '' : 'hidden'; ?> space-y-6">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 text-primary">Pilih Nama Guru</label>
-                        <select name="teacher_id" class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner italic-force">
-                            <option value="">-- Pilih Guru --</option>
+                <div id="pin-fields" class="<?php echo $login_mode == LOGIN_MODE_PIN ? '' : 'hidden'; ?> space-y-8">
+                    <div class="space-y-3">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Identitas Guru</label>
+                        <select name="teacher_id" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold">
+                            <option value="">-- Pilih Nama Anda --</option>
                             <?php foreach ($all_teachers as $t): ?>
-                                <option value="<?php echo $t['id']; ?>">[<?php echo $t['nip']; ?>] - <?php echo $t['full_name']; ?></option>
+                                <option value="<?php echo $t['id']; ?>"><?php echo $t['full_name']; ?> [<?php echo $t['nip']; ?>]</option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Masukkan PIN (6 Digit)</label>
-                        <input type="password" name="pin" maxlength="6" placeholder="123456" 
-                            class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner text-center text-3xl tracking-[1em] font-bold">
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 text-center">PIN Keamanan (6 Digit)</label>
+                        <div class="flex justify-center">
+                            <input type="password" name="pin" maxlength="6" placeholder="••••••" 
+                                class="w-full max-w-[280px] h-20 bg-gray-50 border-none rounded-[32px] outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner text-center text-3xl tracking-[0.5em] font-black placeholder:text-gray-300 placeholder:tracking-normal">
+                        </div>
+                        <p class="text-[9px] text-gray-400 text-center font-bold italic">Masukkan 6 digit kode akses Anda</p>
                     </div>
                 </div>
 
-                <div class="pt-6">
-                    <button type="submit" class="w-full bg-primary text-white py-5 rounded-3xl font-bold hover:bg-black transition-all duration-300 shadow-xl shadow-blue-100 flex items-center justify-center group overflow-hidden relative">
-                        <span class="relative z-10 group-hover:scale-110 transition-transform">Masuk ke Portal KMS</span>
-                        <div class="absolute inset-0 bg-gray-900 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                <div class="pt-8">
+                    <button type="submit" class="w-full bg-[#003366] text-white py-6 rounded-3xl font-black hover:bg-black transition-all duration-300 shadow-2xl shadow-blue-100 flex items-center justify-center group relative overflow-hidden">
+                        <span class="relative z-10 group-hover:tracking-widest transition-all duration-300 uppercase text-xs">Akses Sistem KMS</span>
+                        <div class="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
                     </button>
                 </div>
             </form>
         </div>
 
-        <p class="mt-10 text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest italic-force">
-            &copy; 2026 Academic Knowledge Management System<br>
-            SMA Kristen Kalam Kudus Malang
-        </p>
+        <div class="mt-12 text-center">
+            <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] leading-relaxed">
+                Knowledge Management System<br>
+                <span class="text-red-600">SMA KRISTEN KALAM KUDUS MALANG</span>
+            </p>
+        </div>
     </div>
 
     <script>

@@ -28,19 +28,36 @@ $notifications = $stmt_notif_list->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KMS Bank Soal - SMA Kristen Kalam Kudus Malang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700&display=swap" rel="stylesheet">
-    <!-- TinyMCE CDN -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#003366', // Kalam Kudus Navy
+                        accent: '#E30613',  // Kalam Kudus Red
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .heading-font { font-family: 'Manrope', sans-serif; }
-        .bg-primary { background-color: #0053dc; }
-        .text-primary { color: #0053dc; }
-        .sidebar-item-active { background-color: rgba(0, 83, 220, 0.1); color: #0053dc; border-right: 4px solid #0053dc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        .sidebar-item-active { background-color: #003366; color: white; box-shadow: 0 10px 15px -3px rgba(0, 51, 102, 0.2); }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
     </style>
 </head>
-<body class="bg-[#F8F9FA]">
+<body class="bg-[#F8FAFC]">
     <div class="flex min-h-screen">
         <?php include 'sidebar.php'; ?>
         
