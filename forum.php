@@ -5,7 +5,7 @@ require_once 'includes/header.php';
 
 // Check Role: Tacit knowledge sharing is for academic staff (Guru & Admin Akademik)
 // Kepala Sekolah is restricted from participating in general forum discussions
-checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
+checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK, ROLE_ADMIN_SISTEM]);
 
 $message = '';
 
@@ -15,8 +15,9 @@ if (isset($_POST['add_topic'])) {
     $identityId = getIdentityId();
     
     if (!empty($title)) {
-        $stmt = $pdo->prepare("INSERT INTO forum_topics (title, actor_id) VALUES (?, ?)");
-        $stmt->execute([$title, $identityId]);
+        $kategori_forum = $_POST['kategori_forum'] ?? 'Umum';
+        $stmt = $pdo->prepare("INSERT INTO forum_topics (title, kategori_forum, actor_id) VALUES (?, ?, ?)");
+        $stmt->execute([$title, $kategori_forum, $identityId]);
         $message = 'Topik diskusi berhasil dimulai.';
         
         // Log activity
@@ -116,6 +117,18 @@ $topics = $stmt->fetchAll();
             <div class="space-y-1">
                 <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Topik / Pertanyaan</label>
                 <textarea name="title" required placeholder="Contoh: Bagaimana metode terbaik mengajarkan konsep Termodinamika di kelas XI?" class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition min-h-[120px]"></textarea>
+            </div>
+            <div class="space-y-1 mt-4">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Rumpun Diskusi (Kategori)</label>
+                <select name="kategori_forum" class="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition" required>
+                    <option value="" disabled selected>-- Pilih Rumpun Disiplin Ilmu --</option>
+                    <option value="Rumpun Sains">Rumpun Sains (Matematika, Biologi, Fisika, Kimia)</option>
+                    <option value="Rumpun Sosial">Rumpun Sosial (IPS, Ekonomi, Geografi, Sejarah)</option>
+                    <option value="Rumpun Bahasa">Rumpun Bahasa (Indonesia, Inggris, Mandarin)</option>
+                    <option value="Pedagogik">Pedagogik & Metode Mengajar</option>
+                    <option value="Kurikulum">Diskusi Kurikulum & Penilaian</option>
+                    <option value="Umum">Umum / Lain-lain</option>
+                </select>
             </div>
             <div class="flex space-x-4 pt-8">
                 <button type="button" onclick="document.getElementById('topicModal').classList.add('hidden')" class="flex-1 px-8 py-5 border border-gray-100 text-gray-400 rounded-3xl font-bold hover:bg-gray-100 transition">Batal</button>

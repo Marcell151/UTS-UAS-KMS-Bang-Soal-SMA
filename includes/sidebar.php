@@ -6,7 +6,7 @@ $role = $_SESSION['role_name'];
 <aside class="w-80 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen shadow-sm">
     <div class="p-10 flex flex-col items-center border-b border-gray-50">
         <div class="relative mb-6">
-            <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-100 border border-gray-50 p-4">
+            <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-2xl shadow-blue-100 border border-gray-50 p-4">
                 <img src="upload/logo/Logo.png" alt="Logo Kalam Kudus" class="w-full h-auto object-contain">
             </div>
             <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg">

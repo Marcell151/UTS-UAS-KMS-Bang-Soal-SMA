@@ -25,7 +25,7 @@ if (isset($_POST['upload_kms']) && hasRoleId([ROLE_ADMIN_AKADEMIK])) {
         $fileExtension = strtolower(end($fileNameCmps));
         
         $newFileName = md5(time() . $originalName) . '.' . $fileExtension;
-        $uploadFileDir = 'storage/kms/';
+        $uploadFileDir = 'upload/';
         
         if (!is_dir($uploadFileDir)) {
             mkdir($uploadFileDir, 0777, true);
@@ -92,7 +92,7 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
                         <p class="text-[9px] text-gray-400 uppercase tracking-widest font-bold mt-1">Uploaded: <?php echo date('d M Y', strtotime($tmpl['created_at'])); ?></p>
                     </div>
                 </div>
-                <a href="storage/kms/<?php echo $tmpl['file_path']; ?>" download class="bg-white text-primary hover:bg-primary hover:text-white border border-blue-100 p-3 rounded-xl transition-all duration-300 shadow-sm">
+                <a href="upload/<?php echo $tmpl['file_path']; ?>" download class="bg-white text-primary hover:bg-primary hover:text-white border border-blue-100 p-3 rounded-xl transition-all duration-300 shadow-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </a>
             </div>
@@ -129,7 +129,7 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
                         <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1">Official Document • Published: <?php echo date('d M Y', strtotime($sop['created_at'])); ?></p>
                     </div>
                 </div>
-                <a href="storage/kms/<?php echo $sop['file_path']; ?>" download class="bg-gray-800 text-white hover:bg-blue-600 p-2.5 rounded-xl transition-all">
+                <a href="upload/<?php echo $sop['file_path']; ?>" download class="bg-gray-800 text-white hover:bg-blue-600 p-2.5 rounded-xl transition-all">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 </a>
             </div>

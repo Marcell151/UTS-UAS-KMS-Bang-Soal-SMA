@@ -89,7 +89,6 @@ CREATE TABLE `discussions` (
   `question_id` int(11) DEFAULT NULL,
   `actor_id` int(11) DEFAULT NULL,
   `comment` text NOT NULL,
-  `is_edited` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -104,7 +103,6 @@ CREATE TABLE `forum_replies` (
   `topic_id` int(11) DEFAULT NULL,
   `actor_id` int(11) DEFAULT NULL,
   `message` text NOT NULL,
-  `is_edited` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -117,7 +115,6 @@ CREATE TABLE `forum_replies` (
 CREATE TABLE `forum_topics` (
   `id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `kategori_forum` varchar(50) DEFAULT 'Umum',
   `actor_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -220,13 +217,7 @@ CREATE TABLE `questions` (
   `file_type` varchar(50) DEFAULT NULL,
   `explanation` longtext NOT NULL,
   `difficulty` enum('Mudah','Sedang','Sulit') DEFAULT 'Sedang',
-  `tingkat_kognitif` enum('C1 - Mengingat','C2 - Memahami','C3 - Mengaplikasikan','C4 - Menganalisis','C5 - Mengevaluasi','C6 - Mencipta') DEFAULT 'C2 - Memahami',
-  `jenis_soal` enum('Pilihan Ganda','Essay','Isian Singkat','Praktikum','Lainnya') DEFAULT 'Pilihan Ganda',
-  `tags` varchar(255) DEFAULT NULL,
   `status` enum('Draft','Review','Verified') DEFAULT 'Draft',
-  `is_archived` tinyint(1) DEFAULT 0,
-  `view_count` int(11) DEFAULT 0,
-  `download_count` int(11) DEFAULT 0,
   `uploader_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()

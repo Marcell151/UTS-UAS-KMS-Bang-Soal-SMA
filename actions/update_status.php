@@ -4,9 +4,7 @@ require_once '../config/constants.php';
 require_once '../config/database.php';
 require_once '../includes/auth.php';
 
-// Only Admin Akademik can update status to Verified
-// Kepala Sekolah is Monitoring-only (Read-only for status change)
-checkRoleId([ROLE_ADMIN_AKADEMIK]); 
+// Role check is handled dynamically below
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $question_id = $_POST['question_id'];
@@ -20,19 +18,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Status tidak valid.");
     }
 
-    // Role-based status restrictions (Now refined)
-    // Admin Akademik (ROLE 2) is the primary verifier
-    if ($role_id != ROLE_ADMIN_AKADEMIK) {
-        die("Hanya Admin Akademik yang dapat melakukan perubahan status validasi.");
+    // Get old status and uploader
+    $stmt = $pdo->prepare("SELECT status, uploader_id FROM questions WHERE id = ?");
+    $stmt->execute([$question_id]);
+    $q_data = $stmt->fetch();
+    
+    if (!$q_data) die("Soal tidak ditemukan.");
+    $old_status = $q_data['status'];
+
+    // Role-based status restrictions
+    if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])) {
+        // Admin Akademik can change status
+        if ($new_status == STATUS_DRAFT && empty(trim($notes))) {
+            echo "<script>alert('Catatan/Pesan wajib diisi jika mengembalikan soal ke Draft.'); window.history.back();</script>";
+            exit();
+        }
+    } else if ($identityId == $q_data['uploader_id']) {
+        // Uploader can only change from Draft to Review
+        if ($old_status == STATUS_DRAFT && $new_status == STATUS_REVIEW) {
+            // Allowed
+        } else {
+            die("Anda hanya diizinkan mengirim soal untuk di-review.");
+        }
+    } else {
+        die("Anda tidak memiliki hak akses untuk mengubah status soal ini.");
     }
 
     try {
         $pdo->beginTransaction();
-
-        // Get old status
-        $stmt = $pdo->prepare("SELECT status FROM questions WHERE id = ?");
-        $stmt->execute([$question_id]);
-        $old_status = $stmt->fetchColumn();
 
         // Update status
         $stmt = $pdo->prepare("UPDATE questions SET status = ? WHERE id = ?");

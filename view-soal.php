@@ -8,6 +8,7 @@ if (!$id) {
     header('Location: bank-soal.php');
     exit();
 }
+$identityId = getIdentityId();
 
 // Handle Post Discussion (Tacit Knowledge)
 if (isset($_POST['post_comment'])) {
@@ -79,13 +80,62 @@ $stmt = $pdo->prepare("SELECT di.*,
                        WHERE di.question_id = ? 
                        ORDER BY di.created_at ASC");
 $stmt->execute([$id]);
+$stmt->execute([$id]);
 $discussions = $stmt->fetchAll();
+
+// Add Related Questions Fetch here:
+$mapel_id = $q['category_id'];
+$kelas = $q['class_id'];
+$current_question_id = $id;
+
+$stmt_terkait = $pdo->prepare("
+    SELECT id, title as isi_soal, tingkat_kognitif, created_at 
+    FROM questions 
+    WHERE category_id = :mapel_id 
+      AND class_id = :kelas 
+      AND status = 'Verified' 
+      AND id != :current_id 
+    ORDER BY RAND() 
+    LIMIT 3
+");
+$stmt_terkait->execute([
+    ':mapel_id'   => $mapel_id,
+    ':kelas'      => $kelas,
+    ':current_id' => $current_question_id
+]);
+$soal_terkait = $stmt_terkait->fetchAll();
 
 // Progress Calculation
 $progress = 33; // Draft
 if ($q['status'] == STATUS_REVIEW) $progress = 66;
 if ($q['status'] == STATUS_VERIFIED) $progress = 100;
 ?>
+<div class="flex justify-between items-center mb-6">
+    <a href="bank-soal.php" class="flex items-center text-sm font-bold text-gray-500 hover:text-primary transition group">
+        <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Kembali ke Koleksi Soal
+    </a>
+    
+    <?php if ($q['uploader_id'] == $identityId || hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
+    <div class="flex items-center space-x-3">
+        <a href="edit-soal.php?id=<?php echo $id; ?>" class="flex items-center text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 transition-all bg-blue-50 px-5 py-2.5 rounded-xl border border-blue-100">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            Edit / Revisi
+        </a>
+        <?php if ($q['is_archived'] == 1): ?>
+        <a href="restore_soal.php?id=<?php echo $id; ?>" onclick="return confirm('Apakah Anda yakin ingin memulihkan soal ini ke daftar utama?');" class="flex items-center text-xs font-bold text-green-600 hover:text-white hover:bg-green-600 transition-all bg-green-50 px-5 py-2.5 rounded-xl border border-green-100">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+            Pulihkan Soal
+        </a>
+        <?php else: ?>
+        <a href="archive_soal.php?id=<?php echo $id; ?>" onclick="return confirm('Apakah Anda yakin ingin mengarsipkan soal ini? Soal tidak akan dihapus permanen, tapi akan disembunyikan dari daftar utama.');" class="flex items-center text-xs font-bold text-red-600 hover:text-white hover:bg-red-600 transition-all bg-red-50 px-5 py-2.5 rounded-xl border border-red-100">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            Arsipkan Soal
+        </a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+</div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 space-y-8">
@@ -97,6 +147,11 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                     <div class="flex items-center space-x-4 mt-4">
                         <span class="px-3 py-1 bg-blue-50 text-sky-600 text-[10px] font-bold rounded-full uppercase tracking-widest"><?php echo $q['category_name']; ?></span>
                         <span class="px-3 py-1 bg-gray-50 text-gray-500 border border-gray-200 text-[10px] font-bold rounded-full uppercase tracking-widest">KELAS <?php echo $q['class_name']; ?></span>
+                        <?php if (!empty($q['tags'])): ?>
+                            <?php $tags = explode(',', $q['tags']); foreach ($tags as $tag): ?>
+                            <span class="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-full uppercase tracking-widest border border-purple-100">#<?php echo trim($tag); ?></span>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="text-right">
@@ -131,7 +186,7 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><?php echo $q['file_type']; ?> Document</p>
                         </div>
                     </div>
-                    <a href="storage/documents/<?php echo $q['file_path']; ?>" download="<?php echo $q['original_name']; ?>" class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg shadow-blue-200">Unduh Soal</a>
+                    <a href="download.php?id=<?php echo $id; ?>" class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg shadow-blue-200">Unduh Soal</a>
                 </div>
                 <?php endif; ?>
 
@@ -140,10 +195,42 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Pembahasan (Explicit Knowledge)
                     </h3>
-                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 text-gray-700 leading-relaxed prose max-w-none shadow-inner">
-                        <?php echo $q['explanation']; ?>
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 text-gray-700 leading-relaxed editor-content shadow-inner">
+                        <?php echo (strpos($q['explanation'], '<') !== false) ? $q['explanation'] : nl2br(htmlspecialchars($q['explanation'])); ?>
                     </div>
                 </div>
+
+                <!-- Section Knowledge Retrieval (Rekomendasi Soal) -->
+                <div class="mt-10 pt-6 border-t border-slate-200">
+                    <h3 class="text-lg font-bold text-[#000080] mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Pengetahuan Serupa (Rekomendasi Soal)
+                    </h3>
+                    
+                    <?php if (count($soal_terkait) > 0): ?>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <?php foreach ($soal_terkait as $soal): ?>
+                                <a href="view-soal.php?id=<?= $soal['id'] ?>" class="group block p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-[#000080]/40 hover:shadow-md transition-all duration-300 relative overflow-hidden">
+                                    <div class="absolute top-0 left-0 w-1 h-full bg-[#000080] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <span class="inline-block px-2.5 py-1 text-[10px] font-bold tracking-wider bg-[#000080]/10 text-[#000080] uppercase rounded-full mb-3">
+                                        <?= htmlspecialchars($soal['tingkat_kognitif'] ?? 'N/A') ?>
+                                    </span>
+                                    <p class="text-sm text-slate-700 line-clamp-3 leading-relaxed mb-3">
+                                        <?= htmlspecialchars($soal['isi_soal']) ?>
+                                    </p>
+                                    <div class="text-[11px] text-slate-400 font-medium">
+                                        Dibuat: <?= date('d M Y', strtotime($soal['created_at'])) ?>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-4 rounded-lg bg-slate-50 border border-slate-100 text-center">
+                            <p class="text-sm text-slate-500 italic">Belum ada soal dengan mata pelajaran dan kelas yang sama.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
 
@@ -167,9 +254,35 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                     <div class="flex-1 bg-gray-50 rounded-3xl p-6 relative">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-sm font-bold text-gray-900"><?php echo $msg['full_name']; ?> <span class="text-[10px] text-gray-400 font-normal ml-2 tracking-widest uppercase italic"><?php echo $msg['role_name']; ?></span></span>
-                            <span class="text-[10px] text-gray-400"><?php echo date('d M, H:i', strtotime($msg['created_at'])); ?></span>
+                            <span class="text-[10px] text-gray-400">
+                                <?php echo date('d M, H:i', strtotime($msg['created_at'])); ?>
+                                <?php if (isset($msg['is_edited']) && $msg['is_edited']): ?>
+                                    <i class="ml-1 text-gray-400">(diedit)</i>
+                                <?php endif; ?>
+                            </span>
                         </div>
-                        <p class="text-sm text-gray-600 leading-relaxed"><?php echo nl2br(htmlspecialchars($msg['comment'])); ?></p>
+                        
+                        <!-- View Mode -->
+                        <div id="comment-view-<?php echo $msg['id']; ?>">
+                            <p class="text-sm text-gray-600 leading-relaxed" id="comment-text-<?php echo $msg['id']; ?>"><?php echo nl2br(htmlspecialchars($msg['comment'])); ?></p>
+                            <?php if ($msg['actor_id'] == $identityId): ?>
+                                <div class="mt-2 text-right">
+                                    <button onclick="toggleEdit(<?php echo $msg['id']; ?>)" class="text-[10px] text-gray-400 hover:text-blue-600 font-bold tracking-widest uppercase transition">(Edit)</button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <?php if ($msg['actor_id'] == $identityId): ?>
+                        <div id="comment-edit-<?php echo $msg['id']; ?>" class="hidden mt-2">
+                            <!-- JS will dynamically adjust height based on scrollHeight -->
+                            <textarea id="comment-input-<?php echo $msg['id']; ?>" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition overflow-hidden min-h-[80px]"><?php echo htmlspecialchars($msg['comment']); ?></textarea>
+                            <div class="mt-2 flex justify-end space-x-2">
+                                <button onclick="toggleEdit(<?php echo $msg['id']; ?>)" class="px-4 py-1.5 text-[10px] text-gray-500 hover:text-gray-700 font-bold tracking-widest uppercase">Batal</button>
+                                <button onclick="saveEdit(<?php echo $msg['id']; ?>)" id="btn-save-<?php echo $msg['id']; ?>" class="px-4 py-1.5 text-[10px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold tracking-widest uppercase transition">Simpan</button>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -196,7 +309,7 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
         <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK])): ?>
         <div class="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Kontrol Validasi (Admin Akademik)</h4>
-            <form action="actions/update_status.php" method="POST" class="space-y-4">
+            <form action="actions/update_status.php" method="POST" class="space-y-4" onsubmit="return validateStatusForm()">
                 <input type="hidden" name="question_id" value="<?php echo $id; ?>">
                 <div>
                     <label class="block text-[10px] text-gray-400 font-bold uppercase mb-2">Ubah Status</label>
@@ -217,6 +330,18 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
         <div class="bg-blue-50 rounded-3xl border border-blue-100 p-8 shadow-sm">
             <h4 class="text-[10px] font-bold text-primary uppercase tracking-widest mb-4">Monitoring Kepala Sekolah</h4>
             <p class="text-xs text-gray-600 leading-relaxed italic">Status validasi dikelola sepenuhnya oleh Admin Akademik. Anda memiliki akses untuk memantau perkembangan dan kualitas aset pengetahuan ini.</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($identityId == $q['uploader_id'] && $q['status'] == STATUS_DRAFT): ?>
+        <div class="bg-yellow-50 rounded-3xl border border-yellow-200 p-8 shadow-sm">
+            <h4 class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest mb-4">Pengajuan Verifikasi</h4>
+            <p class="text-xs text-yellow-700 leading-relaxed italic mb-6">Soal Anda saat ini berstatus Draft dan tersembunyi dari publik. Kirimkan ke TU/Admin Akademik untuk direview.</p>
+            <form action="actions/update_status.php" method="POST">
+                <input type="hidden" name="question_id" value="<?php echo $id; ?>">
+                <input type="hidden" name="status" value="<?php echo STATUS_REVIEW; ?>">
+                <button type="submit" onclick="return confirm('Kirim soal ini untuk di-review?');" class="w-full bg-yellow-500 text-white py-4 rounded-2xl font-bold hover:bg-yellow-600 transition shadow-xl shadow-yellow-200">Kirim untuk Direview</button>
+            </form>
         </div>
         <?php endif; ?>
 
@@ -266,5 +391,76 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
         </div>
     </div>
 </div>
+
+<script>
+function validateStatusForm() {
+    const statusSelect = document.querySelector('select[name="status"]');
+    const notesArea = document.querySelector('textarea[name="notes"]');
+    if (statusSelect && notesArea) {
+        if (statusSelect.value === '<?php echo STATUS_DRAFT; ?>' && notesArea.value.trim() === '') {
+            alert('Catatan Perubahan (Pesan) WAJIB diisi jika mengembalikan soal ke Draft agar guru mengetahui letak kesalahannya.');
+            notesArea.focus();
+            return false;
+        }
+    }
+    return true;
+}
+
+function toggleEdit(id) {
+    const viewDiv = document.getElementById('comment-view-' + id);
+    const editDiv = document.getElementById('comment-edit-' + id);
+    const textarea = document.getElementById('comment-input-' + id);
+    
+    if (editDiv.classList.contains('hidden')) {
+        viewDiv.classList.add('hidden');
+        editDiv.classList.remove('hidden');
+        // Auto-resize to fit content
+        textarea.style.height = ''; 
+        textarea.style.height = textarea.scrollHeight + 'px';
+        textarea.focus();
+    } else {
+        viewDiv.classList.remove('hidden');
+        editDiv.classList.add('hidden');
+    }
+}
+
+function saveEdit(id) {
+    const textarea = document.getElementById('comment-input-' + id);
+    const comment = textarea.value.trim();
+    const btnSave = document.getElementById('btn-save-' + id);
+    
+    if (comment === '') {
+        alert('Komentar tidak boleh kosong');
+        return;
+    }
+    
+    btnSave.disabled = true;
+    btnSave.innerText = 'Menyimpan...';
+    
+    const formData = new FormData();
+    formData.append('discussion_id', id);
+    formData.append('comment', comment);
+    
+    fetch('update-discussion.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Gagal: ' + data.message);
+            btnSave.disabled = false;
+            btnSave.innerText = 'Simpan';
+        }
+    })
+    .catch(error => {
+        alert('Terjadi kesalahan jaringan.');
+        btnSave.disabled = false;
+        btnSave.innerText = 'Simpan';
+    });
+}
+</script>
 
 <?php require_once 'includes/footer.php'; ?>

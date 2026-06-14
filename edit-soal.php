@@ -1,6 +1,6 @@
 <?php
-// tambah-soal.php
-$pageTitle = 'Kontribusi Soal Baru';
+// edit-soal.php
+$pageTitle = 'Revisi & Update Soal';
 require_once 'includes/header.php';
 
 // Check Role: Only Guru and Admin Akademik can contribute questions
@@ -8,6 +8,30 @@ checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
 
 $error = '';
 $success = '';
+
+$id = $_GET['id'] ?? null;
+if (!$id) {
+    header('Location: bank-soal.php');
+    exit();
+}
+
+$identityId = getIdentityId();
+
+// Fetch the existing question
+$stmt = $pdo->prepare("SELECT * FROM questions WHERE id = ?");
+$stmt->execute([$id]);
+$question = $stmt->fetch();
+
+if (!$question) {
+    header('Location: bank-soal.php');
+    exit();
+}
+
+// Only the original uploader or Admin can edit
+if ($question['uploader_id'] != $identityId && !hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])) {
+    echo "<script>alert('Anda tidak memiliki akses untuk mengedit soal ini.'); window.location.href='view-soal.php?id=$id';</script>";
+    exit();
+}
 
 // Fetch Categories
 $stmt = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
@@ -30,11 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $difficulty = $_POST['difficulty'];
     $tingkat_kognitif = $_POST['tingkat_kognitif'] ?? 'C2 - Memahami';
     $jenis_soal = $_POST['jenis_soal'] ?? 'Pilihan Ganda';
-    $identityId = getIdentityId();
     
-    $newFileName = null;
-    $originalName = null;
-    $fileExtension = null;
+    // Default to keep old file
+    $newFileName = $question['file_path'];
+    $originalName = $question['original_name'];
+    $fileExtension = $question['file_type'];
+    $isFileUpdated = false;
 
     // Handle File Upload if exists
     if (isset($_FILES['document']) && $_FILES['document']['error'] === UPLOAD_ERR_OK) {
@@ -53,7 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!move_uploaded_file($fileTmpPath, $uploadFileDir . $newFileName)) {
-                $error = 'Gagal mengupload file.';
+                $error = 'Gagal mengupload file baru.';
+            } else {
+                $isFileUpdated = true;
             }
         } else {
             $error = 'Format file tidak didukung.';
@@ -64,30 +91,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $stmt = $pdo->prepare("INSERT INTO questions (title, class_id, category_id, materi, tags, file_path, original_name, file_type, explanation, uploader_id, difficulty, tingkat_kognitif, jenis_soal, status) 
-                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$title, $class_id, $category_id, $materi, $tags, $newFileName, $originalName, $fileExtension, $explanation, $identityId, $difficulty, $tingkat_kognitif, $jenis_soal, STATUS_DRAFT]);
+            $update_stmt = $pdo->prepare("UPDATE questions SET title = ?, class_id = ?, category_id = ?, materi = ?, tags = ?, file_path = ?, original_name = ?, file_type = ?, explanation = ?, difficulty = ?, tingkat_kognitif = ?, jenis_soal = ?, status = ? WHERE id = ?");
+            // Reset status to Review when edited
+            $update_stmt->execute([$title, $class_id, $category_id, $materi, $tags, $newFileName, $originalName, $fileExtension, $explanation, $difficulty, $tingkat_kognitif, $jenis_soal, STATUS_REVIEW, $id]);
             
-            $question_id = $pdo->lastInsertId();
-
-            // Log Initial Status
-            $stmt = $pdo->prepare("INSERT INTO question_status_logs (question_id, actor_id, old_status, new_status, notes) VALUES (?, ?, NULL, ?, ?)");
-            $stmt->execute([$question_id, $identityId, STATUS_DRAFT, 'Soal pertama kali dibuat sebagai Draft']);
+            // Log Status Change to Review
+            $stmt = $pdo->prepare("INSERT INTO question_status_logs (question_id, actor_id, old_status, new_status, notes) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$id, $identityId, $question['status'], STATUS_REVIEW, 'Soal direvisi dan diupdate. Otomatis dikembalikan ke status Review.']);
 
             // Activity Log
+            $logMsg = $isFileUpdated ? "Merevisi dan mengunggah dokumen baru untuk soal: $title" : "Merevisi metadata soal: $title";
             $stmt = $pdo->prepare("INSERT INTO logs (actor_id, action, ip_address) VALUES (?, ?, ?)");
-            $stmt->execute([$identityId, "Membuat soal baru: $title", $_SERVER['REMOTE_ADDR']]);
+            $stmt->execute([$identityId, $logMsg, $_SERVER['REMOTE_ADDR']]);
 
-            // [NEW] Notification Logic: Notify all Admin Akademik
+            // Notification Logic: Notify Admin
             $stmt_admin = $pdo->prepare("SELECT identity_id FROM staff WHERE role_id = ?");
             $stmt_admin->execute([ROLE_ADMIN_AKADEMIK]);
             $admins = $stmt_admin->fetchAll();
             foreach ($admins as $admin) {
-                addNotification($pdo, $admin['identity_id'], "Soal baru '$title' butuh review Anda.", "bank-soal.php?status=Review");
+                addNotification($pdo, $admin['identity_id'], "Soal '$title' telah direvisi dan butuh review ulang Anda.", "bank-soal.php?status=Review");
             }
 
             $pdo->commit();
-            header('Location: bank-soal.php?success=1');
+            header("Location: view-soal.php?id=$id&updated=1");
             exit();
         } catch (PDOException $e) {
             $pdo->rollBack();
@@ -101,11 +127,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Form Section -->
     <div class="lg:col-span-3">
         <div class="bg-white rounded-[48px] border border-gray-100 shadow-2xl shadow-blue-50 overflow-hidden mb-12">
-            <div class="bg-[#003366] p-12 text-white relative">
+            <div class="bg-teal-700 p-12 text-white relative">
                 <div class="relative z-10">
-                    <span class="px-4 py-1.5 bg-white bg-opacity-10 text-white text-[10px] font-black rounded-full uppercase tracking-widest mb-4 inline-block">Knowledge Capture</span>
-                    <h3 class="text-3xl font-black">Kontribusi Bank Soal</h3>
-                    <p class="text-blue-100 mt-3 max-w-lg opacity-80">Dokumentasikan wawasan Anda ke dalam sistem sebagai aset pengetahuan institusional.</p>
+                    <span class="px-4 py-1.5 bg-white bg-opacity-10 text-white text-[10px] font-black rounded-full uppercase tracking-widest mb-4 inline-block">Knowledge Update</span>
+                    <h3 class="text-3xl font-black">Revisi Bank Soal</h3>
+                    <p class="text-teal-100 mt-3 max-w-lg opacity-80">Perbarui aset soal ini. Setelah disimpan, status akan kembali menjadi "Review" untuk divalidasi ulang.</p>
                 </div>
                 <svg class="absolute top-0 right-0 w-48 h-48 text-white opacity-5 -mr-12 -mt-12" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-3 3 5z"></path></svg>
             </div>
@@ -121,83 +147,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Judul Soal / Nama Dokumen</label>
-                        <input type="text" name="title" required placeholder="Contoh: PAKET UTS MATEMATIKA X" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
+                        <input type="text" name="title" value="<?php echo htmlspecialchars($question['title']); ?>" required class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
                     </div>
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
                         <select name="category_id" required class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold">
-                            <option value="">-- Pilih Mapel --</option>
                             <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo $cat['id']; ?>"><?php echo $cat['name']; ?></option>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo $cat['id'] == $question['category_id'] ? 'selected' : ''; ?>><?php echo $cat['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Level Kelas</label>
                         <select name="class_id" required class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold">
-                            <option value="">-- Pilih Kelas --</option>
                             <?php foreach ($classes as $cls): ?>
-                                <option value="<?php echo $cls['id']; ?>">Kelas <?php echo $cls['name']; ?></option>
+                                <option value="<?php echo $cls['id']; ?>" <?php echo $cls['id'] == $question['class_id'] ? 'selected' : ''; ?>>Kelas <?php echo $cls['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kesulitan</label>
                         <select name="difficulty" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold text-red-600">
-                            <option value="Mudah">🟢 Mudah</option>
-                            <option value="Sedang" selected>🟡 Sedang</option>
-                            <option value="Sulit">🔴 Sulit</option>
+                            <option value="Mudah" <?php echo $question['difficulty'] == 'Mudah' ? 'selected' : ''; ?>>🟢 Mudah</option>
+                            <option value="Sedang" <?php echo $question['difficulty'] == 'Sedang' ? 'selected' : ''; ?>>🟡 Sedang</option>
+                            <option value="Sulit" <?php echo $question['difficulty'] == 'Sulit' ? 'selected' : ''; ?>>🔴 Sulit</option>
                         </select>
                     </div>
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tingkat Kognitif</label>
                         <select name="tingkat_kognitif" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold text-[#003366]" required>
-                            <option value="C1 - Mengingat">C1 - Mengingat (Recall)</option>
-                            <option value="C2 - Memahami" selected>C2 - Memahami (Understand)</option>
-                            <option value="C3 - Mengaplikasikan">C3 - Mengaplikasikan (Apply)</option>
-                            <option value="C4 - Menganalisis">C4 - Menganalisis (Analyze)</option>
-                            <option value="C5 - Mengevaluasi">C5 - Mengevaluasi (Evaluate)</option>
-                            <option value="C6 - Mencipta">C6 - Mencipta (Create)</option>
+                            <option value="C1 - Mengingat" <?php echo $question['tingkat_kognitif'] == 'C1 - Mengingat' ? 'selected' : ''; ?>>C1 - Mengingat (Recall)</option>
+                            <option value="C2 - Memahami" <?php echo $question['tingkat_kognitif'] == 'C2 - Memahami' ? 'selected' : ''; ?>>C2 - Memahami (Understand)</option>
+                            <option value="C3 - Mengaplikasikan" <?php echo $question['tingkat_kognitif'] == 'C3 - Mengaplikasikan' ? 'selected' : ''; ?>>C3 - Mengaplikasikan (Apply)</option>
+                            <option value="C4 - Menganalisis" <?php echo $question['tingkat_kognitif'] == 'C4 - Menganalisis' ? 'selected' : ''; ?>>C4 - Menganalisis (Analyze)</option>
+                            <option value="C5 - Mengevaluasi" <?php echo $question['tingkat_kognitif'] == 'C5 - Mengevaluasi' ? 'selected' : ''; ?>>C5 - Mengevaluasi (Evaluate)</option>
+                            <option value="C6 - Mencipta" <?php echo $question['tingkat_kognitif'] == 'C6 - Mencipta' ? 'selected' : ''; ?>>C6 - Mencipta (Create)</option>
                         </select>
                     </div>
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Jenis Soal</label>
                         <select name="jenis_soal" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-bold text-teal-600" required>
-                            <option value="Pilihan Ganda" selected>📝 Pilihan Ganda</option>
-                            <option value="Essay">✍️ Essay</option>
-                            <option value="Isian Singkat">✏️ Isian Singkat</option>
-                            <option value="Praktikum">🔬 Praktikum</option>
-                            <option value="Lainnya">📌 Lainnya</option>
+                            <option value="Pilihan Ganda" <?php echo $question['jenis_soal'] == 'Pilihan Ganda' ? 'selected' : ''; ?>>📝 Pilihan Ganda</option>
+                            <option value="Essay" <?php echo $question['jenis_soal'] == 'Essay' ? 'selected' : ''; ?>>✍️ Essay</option>
+                            <option value="Isian Singkat" <?php echo $question['jenis_soal'] == 'Isian Singkat' ? 'selected' : ''; ?>>✏️ Isian Singkat</option>
+                            <option value="Praktikum" <?php echo $question['jenis_soal'] == 'Praktikum' ? 'selected' : ''; ?>>🔬 Praktikum</option>
+                            <option value="Lainnya" <?php echo $question['jenis_soal'] == 'Lainnya' ? 'selected' : ''; ?>>📌 Lainnya</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="space-y-3">
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Materi / Topik Utama</label>
-                    <input type="text" name="materi" required placeholder="Contoh: Trigonometri Lanjut" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
+                    <input type="text" name="materi" value="<?php echo htmlspecialchars($question['materi']); ?>" required class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner font-semibold">
                 </div>
 
                 <div class="space-y-3">
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Kata Kunci / Tag (Pisahkan dengan koma)</label>
-                    <input type="text" name="tags" placeholder="Contoh: PTS, HOTS, Kurikulum Merdeka" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner font-semibold text-blue-700">
+                    <input type="text" name="tags" value="<?php echo htmlspecialchars($question['tags']); ?>" placeholder="Contoh: PTS, HOTS, Kurikulum Merdeka" class="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner font-semibold text-blue-700">
                 </div>
 
                 <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-[#003366] uppercase tracking-widest ml-1">File Pendukung (PDF/Docx)</label>
-                    <div class="p-6 bg-blue-50 rounded-3xl border-2 border-dashed border-blue-200 text-center hover:bg-blue-100 transition duration-300">
-                        <input type="file" name="document" class="text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-[#003366] file:text-white hover:file:bg-black file:cursor-pointer cursor-pointer">
+                    <label class="block text-[10px] font-black text-[#003366] uppercase tracking-widest ml-1">File Pendukung Baru (Abaikan jika tidak ingin mengganti file)</label>
+                    <div class="p-6 bg-teal-50 rounded-3xl border-2 border-dashed border-teal-200 text-center hover:bg-teal-100 transition duration-300">
+                        <input type="file" name="document" class="text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-xs file:font-black file:bg-teal-700 file:text-white hover:file:bg-black file:cursor-pointer cursor-pointer">
+                        <?php if ($question['original_name']): ?>
+                            <p class="text-[10px] text-teal-700 mt-3 font-bold">File Terpasang Saat Ini: <?php echo $question['original_name']; ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-red-600 uppercase tracking-widest ml-1">Pembahasan / Knowledge Reflection (Explicit)</label>
-                    <textarea id="editor" name="explanation" class="w-full px-8 py-5 bg-gray-50 border-none rounded-[40px] outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner min-h-[300px]"></textarea>
-                    <p class="text-[9px] text-gray-400 mt-4 font-black uppercase tracking-widest">Wajib diisi sebagai dokumentasi pengetahuan institusional sekolah.</p>
+                    <label class="block text-[10px] font-black text-red-600 uppercase tracking-widest ml-1">Pembahasan / Knowledge Reflection</label>
+                    <textarea id="editor" name="explanation" class="w-full px-8 py-5 bg-gray-50 border-none rounded-[40px] outline-none focus:ring-2 focus:ring-[#003366] transition shadow-inner min-h-[300px]"><?php echo htmlspecialchars($question['explanation']); ?></textarea>
                 </div>
 
                 <div class="flex items-center space-x-6 pt-10">
-                    <a href="bank-soal.php" class="px-10 py-5 text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-600 transition">Batalkan</a>
-                    <button type="submit" class="flex-1 px-12 py-6 bg-[#003366] text-white rounded-[32px] font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-2xl shadow-blue-100">Simpan Draft Aset</button>
+                    <a href="view-soal.php?id=<?php echo $id; ?>" class="px-10 py-5 text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-600 transition">Batalkan</a>
+                    <button type="submit" class="flex-1 px-12 py-6 bg-teal-700 text-white rounded-[32px] font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-2xl shadow-teal-100">Simpan Perubahan & Ajukan Review</button>
                 </div>
             </form>
         </div>
@@ -225,15 +251,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <?php endforeach; ?>
             </div>
-        </div>
-
-        <div class="bg-red-50 rounded-[40px] p-10 border border-red-100 relative overflow-hidden group">
-            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-red-600 opacity-5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-            <h5 class="text-[10px] font-black text-red-600 uppercase tracking-[0.2em] mb-4">Butuh Bantuan?</h5>
-            <p class="text-[11px] text-gray-600 leading-relaxed mb-8 opacity-80">Jika ada kendala dalam proses entry soal, silakan diskusikan di forum KMS.</p>
-            <a href="forum.php" class="inline-flex items-center text-[10px] font-black text-[#003366] uppercase tracking-widest hover:translate-x-2 transition-transform duration-300">
-                Portal Forum ➔
-            </a>
         </div>
     </div>
 </div>

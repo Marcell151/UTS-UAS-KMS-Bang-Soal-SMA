@@ -108,7 +108,7 @@ $all_teachers = $stmt->fetchAll();
 
     <div class="max-w-md w-full relative z-10">
         <div class="text-center mb-12">
-            <div class="inline-flex items-center justify-center w-28 h-28 bg-white rounded-[40px] shadow-2xl shadow-blue-100 mb-8 p-6 border border-gray-50">
+            <div class="inline-flex items-center justify-center w-32 h-32 bg-white rounded-[40px] shadow-2xl shadow-blue-100 mb-8 p-3 border border-gray-50">
                 <img src="upload/logo/Logo.png" alt="Logo Kalam Kudus" class="w-full h-auto object-contain">
             </div>
             <h1 class="text-4xl font-black text-[#003366] tracking-tighter leading-none">Portal KMS</h1>

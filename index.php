@@ -36,9 +36,38 @@ $stmt = $pdo->query("SELECT l.*,
                          (SELECT username FROM staff WHERE identity_id = l.actor_id),
                          'GURU'
                      ) as username
-                     FROM logs l 
+                     FROM logs l
                      ORDER BY l.created_at DESC LIMIT 6");
 $recentLogs = $stmt->fetchAll();
+
+// Komponen A: Kesenjangan Pengetahuan (Gap Analysis)
+$stmt_gap = $pdo->query("
+    SELECT c.name as nama_mapel, COUNT(q.id) as jumlah_soal 
+    FROM categories c
+    LEFT JOIN questions q ON c.id = q.category_id AND q.status = 'Verified'
+    GROUP BY c.id 
+    ORDER BY jumlah_soal ASC 
+    LIMIT 4
+");
+$gap_mapel = $stmt_gap->fetchAll();
+
+// Komponen B: Monitoring Per Kelas Terpisah
+$stmt_kelas = $pdo->query("
+    SELECT cl.name as kelas_name, q.status, COUNT(q.id) as total 
+    FROM classes cl
+    LEFT JOIN questions q ON cl.id = q.class_id
+    GROUP BY cl.id, q.status
+");
+$data_kelas = [];
+while ($row = $stmt_kelas->fetch()) {
+    $k = $row['kelas_name'];
+    if (!isset($data_kelas[$k])) {
+        $data_kelas[$k] = ['Draft' => 0, 'Review' => 0, 'Verified' => 0];
+    }
+    if ($row['status']) {
+        $data_kelas[$k][$row['status']] = $row['total'];
+    }
+}
 ?>
 
 <!-- Premium Header Info -->
@@ -129,6 +158,90 @@ $recentLogs = $stmt->fetchAll();
     </div>
 </div>
 
+<!-- Metrik Pemanfaatan & Gap Analysis Dashboard -->
+<div class="bg-slate-50 p-4 md:p-8 rounded-xl mb-12">
+    <div class="mb-6">
+        <h2 class="text-2xl font-black text-[#000080] tracking-tight">KMS Analytics Dashboard</h2>
+        <p class="text-slate-500 text-sm">Metrik Pemanfaatan & Peta Pengetahuan Aktif</p>
+    </div>
+
+    <!-- Bento Grid Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- KOMPONEN A: Gap Analysis (1 Kolom) -->
+        <div class="col-span-1 bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm rounded-2xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-[#000080]/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+            
+            <div class="flex items-start justify-between mb-5">
+                <div>
+                    <h3 class="text-md font-bold text-slate-800">Gap Analysis</h3>
+                    <p class="text-xs text-slate-500 mt-1">Kekurangan bank soal terverifikasi</p>
+                </div>
+                <div class="p-2 bg-red-50 text-red-500 rounded-lg border border-red-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <?php foreach ($gap_mapel as $mapel): ?>
+                    <div class="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-slate-100/50 shadow-sm transition hover:shadow-md">
+                        <span class="font-semibold text-slate-700 text-sm"><?= htmlspecialchars($mapel['nama_mapel']) ?></span>
+                        <span class="px-2.5 py-1 text-[11px] font-bold rounded-md <?= $mapel['jumlah_soal'] == 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' ?>">
+                            <?= $mapel['jumlah_soal'] ?> Soal
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- KOMPONEN B: Monitoring per Kelas (2 Kolom) -->
+        <div class="col-span-1 lg:col-span-2 bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm rounded-2xl p-6 relative">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <h3 class="text-md font-bold text-slate-800">Distribusi Pengetahuan Per Kelas</h3>
+                    <p class="text-xs text-slate-500 mt-1">Monitoring status workflow secara struktural</p>
+                </div>
+                <div class="p-2 bg-[#000080]/10 text-[#000080] rounded-lg border border-[#000080]/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <?php foreach ($data_kelas as $k => $counts): ?>
+                <div class="p-5 rounded-2xl bg-white/80 border border-slate-100 shadow-sm hover:border-[#000080]/30 transition-colors">
+                    <div class="text-center mb-4">
+                        <span class="inline-block px-4 py-1.5 bg-slate-100 text-[#000080] text-sm font-black rounded-full tracking-widest">
+                            KELAS <?= htmlspecialchars($k) ?>
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                            <span class="text-slate-500 font-medium flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span> Verified
+                            </span>
+                            <span class="font-bold text-slate-800"><?= $counts['Verified'] ?></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                            <span class="text-slate-500 font-medium flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Review
+                            </span>
+                            <span class="font-bold text-slate-800"><?= $counts['Review'] ?></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 mr-2"></span> Draft
+                            </span>
+                            <span class="font-bold text-slate-800"><?= $counts['Draft'] ?></span>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
     <!-- Recent Activity -->
     <div class="lg:col-span-2 bg-white rounded-[56px] border border-gray-100 shadow-2xl p-12">
@@ -184,7 +297,7 @@ $recentLogs = $stmt->fetchAll();
         <div class="absolute top-0 right-0 w-80 h-80 bg-[#003366] rounded-full blur-[120px] opacity-30"></div>
         
         <div class="relative z-10">
-            <img src="assets/img/logo_kk.png" alt="Logo" class="w-20 h-auto mb-10 opacity-80 filter grayscale brightness-200">
+            <img src="assets/img/Logo.png" alt="Logo" class="w-48 h-auto mb-10 opacity-80 filter grayscale brightness-200">
             <h3 class="text-4xl font-black mb-6 leading-tight">Misi KMS<br>SMA KK Malang</h3>
             <p class="text-gray-400 text-sm leading-relaxed mb-12 italic">"Mentransformasi wawasan personal menjadi aset institusional melalui sistem yang terstruktur dan kolaboratif."</p>
             

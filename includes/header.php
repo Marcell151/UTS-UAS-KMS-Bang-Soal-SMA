@@ -31,6 +31,7 @@ $notifications = $stmt_notif_list->fetchAll();
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -55,6 +56,19 @@ $notifications = $stmt_notif_list->fetchAll();
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+        
+        /* TinyMCE / Rich Text Editor Reset */
+        .editor-content p { margin-bottom: 1.25em; line-height: 1.7; }
+        .editor-content ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1.25em; }
+        .editor-content ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1.25em; }
+        .editor-content li { margin-bottom: 0.5em; }
+        .editor-content h1, .editor-content h2, .editor-content h3 { font-weight: 800; margin-top: 1.5em; margin-bottom: 0.75em; color: #003366; }
+        .editor-content strong { font-weight: 800; color: #1E293B; }
+        
+        /* CKEditor Custom Styling */
+        .ck-editor__editable_inline { min-height: 300px; border-bottom-left-radius: 32px !important; border-bottom-right-radius: 32px !important; padding: 2rem !important; }
+        .ck-toolbar { border-top-left-radius: 32px !important; border-top-right-radius: 32px !important; background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-bottom: none !important; }
+        .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border-color: #e2e8f0 !important; }
     </style>
 </head>
 <body class="bg-[#F8FAFC]">
@@ -62,7 +76,7 @@ $notifications = $stmt_notif_list->fetchAll();
         <?php include 'sidebar.php'; ?>
         
         <div class="flex-1">
-            <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-10">
+            <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-8 sticky top-0 z-50">
                 <!-- Topbar Actions -->
                 <div class="flex items-center space-x-6">
                     <!-- Notifications Bell -->
@@ -87,14 +101,14 @@ $notifications = $stmt_notif_list->fetchAll();
                                     <div class="p-10 text-center text-[11px] text-gray-400 italic">No new alerts.</div>
                                 <?php endif; ?>
                                 <?php foreach ($notifications as $notif): ?>
-                                <a href="<?php echo $notif['link']; ?>" class="block p-5 hover:bg-gray-50 rounded-2xl transition <?php echo !$notif['is_read'] ? 'bg-blue-50/30' : ''; ?>">
+                                <a href="read_notif.php?id=<?php echo $notif['id']; ?>&redirect=<?php echo urlencode($notif['link'] ?? '#'); ?>" class="block p-5 hover:bg-gray-50 rounded-2xl transition <?php echo !$notif['is_read'] ? 'bg-blue-50/30' : ''; ?>">
                                     <p class="text-xs text-gray-700 leading-snug <?php echo !$notif['is_read'] ? 'font-bold' : ''; ?>"><?php echo $notif['message']; ?></p>
                                     <p class="text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-widest italic"><?php echo date('H:i, d M Y', strtotime($notif['created_at'])); ?></p>
                                 </a>
                                 <?php endforeach; ?>
                             </div>
                             <div class="p-4 border-t border-gray-50 text-center">
-                                <a href="#" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">View All Activity</a>
+                                <a href="notifications.php" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">View All Activity</a>
                             </div>
                         </div>
                     </div>

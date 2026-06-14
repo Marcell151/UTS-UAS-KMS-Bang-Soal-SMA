@@ -4,7 +4,9 @@ $pageTitle = 'Diskusi Kolaboratif';
 require_once 'includes/header.php';
 
 // Check Role: Tacit knowledge sharing is for academic staff (Guru & Admin Akademik)
-checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]);
+checkRoleId([ROLE_GURU, ROLE_ADMIN_AKADEMIK, ROLE_KEPSEK, ROLE_ADMIN_SISTEM]);
+
+$identityId = getIdentityId();
 
 $topic_id = $_GET['id'] ?? null;
 if (!$topic_id) {
@@ -15,7 +17,6 @@ if (!$topic_id) {
 // Handle New Reply
 if (isset($_POST['post_reply'])) {
     $message = $_POST['message'];
-    $identityId = getIdentityId();
     
     if (!empty($message)) {
         $stmt = $pdo->prepare("INSERT INTO forum_replies (topic_id, actor_id, message) VALUES (?, ?, ?)");
@@ -122,12 +123,37 @@ $replies = $stmt->fetchAll();
                         <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1"><?php echo $reply['role_name']; ?></p>
                     </div>
                     <div class="text-right">
-                         <p class="text-[10px] text-gray-400 font-bold"><?php echo date('d M, H:i', strtotime($reply['created_at'])); ?></p>
+                         <p class="text-[10px] text-gray-400 font-bold">
+                             <?php echo date('d M, H:i', strtotime($reply['created_at'])); ?>
+                             <?php if (isset($reply['is_edited']) && $reply['is_edited']): ?>
+                                 <i class="ml-1 font-normal text-gray-400">(diedit)</i>
+                             <?php endif; ?>
+                         </p>
                     </div>
                 </div>
-                <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line bg-gray-50/50 p-6 rounded-2xl border border-gray-50 italic">
-                    <?php echo $reply['message']; ?>
+                
+                <!-- View Mode -->
+                <div id="reply-view-<?php echo $reply['id']; ?>">
+                    <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line bg-gray-50/50 p-6 rounded-2xl border border-gray-50 italic" id="reply-text-<?php echo $reply['id']; ?>">
+                        <?php echo htmlspecialchars($reply['message']); ?>
+                    </div>
+                    <?php if ($reply['actor_id'] == $identityId): ?>
+                        <div class="mt-3 text-right">
+                            <button onclick="toggleEdit(<?php echo $reply['id']; ?>)" class="text-[10px] text-gray-400 hover:text-blue-600 font-bold tracking-widest uppercase transition">(Edit)</button>
+                        </div>
+                    <?php endif; ?>
                 </div>
+
+                <!-- Edit Mode -->
+                <?php if ($reply['actor_id'] == $identityId): ?>
+                <div id="reply-edit-<?php echo $reply['id']; ?>" class="hidden mt-2">
+                    <textarea id="reply-input-<?php echo $reply['id']; ?>" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" class="w-full bg-white border border-gray-200 rounded-2xl p-6 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition overflow-hidden min-h-[100px]"><?php echo htmlspecialchars($reply['message']); ?></textarea>
+                    <div class="mt-3 flex justify-end space-x-3">
+                        <button onclick="toggleEdit(<?php echo $reply['id']; ?>)" class="px-5 py-2 text-[10px] text-gray-500 hover:text-gray-700 font-bold tracking-widest uppercase">Batal</button>
+                        <button onclick="saveEdit(<?php echo $reply['id']; ?>)" id="btn-save-<?php echo $reply['id']; ?>" class="px-5 py-2 text-[10px] bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold tracking-widest uppercase transition shadow-lg shadow-blue-100">Simpan</button>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
         <?php endforeach; ?>
@@ -158,5 +184,63 @@ $replies = $stmt->fetchAll();
     </div>
     <?php endif; ?>
 </div>
+
+<script>
+function toggleEdit(id) {
+    const viewDiv = document.getElementById('reply-view-' + id);
+    const editDiv = document.getElementById('reply-edit-' + id);
+    const textarea = document.getElementById('reply-input-' + id);
+    
+    if (editDiv.classList.contains('hidden')) {
+        viewDiv.classList.add('hidden');
+        editDiv.classList.remove('hidden');
+        // Auto-resize to fit content
+        textarea.style.height = ''; 
+        textarea.style.height = textarea.scrollHeight + 'px';
+        textarea.focus();
+    } else {
+        viewDiv.classList.remove('hidden');
+        editDiv.classList.add('hidden');
+    }
+}
+
+function saveEdit(id) {
+    const textarea = document.getElementById('reply-input-' + id);
+    const message = textarea.value.trim();
+    const btnSave = document.getElementById('btn-save-' + id);
+    
+    if (message === '') {
+        alert('Balasan tidak boleh kosong');
+        return;
+    }
+    
+    btnSave.disabled = true;
+    btnSave.innerText = 'Menyimpan...';
+    
+    const formData = new FormData();
+    formData.append('reply_id', id);
+    formData.append('message', message);
+    
+    fetch('update-forum-reply.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Gagal: ' + data.message);
+            btnSave.disabled = false;
+            btnSave.innerText = 'Simpan';
+        }
+    })
+    .catch(error => {
+        alert('Terjadi kesalahan jaringan.');
+        btnSave.disabled = false;
+        btnSave.innerText = 'Simpan';
+    });
+}
+</script>
 
 <?php require_once 'includes/footer.php'; ?>
