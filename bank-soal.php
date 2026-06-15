@@ -155,13 +155,13 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
             <thead>
                 <tr class="bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">
                     <th class="px-10 py-6">Detail Soal & Topik</th>
-                    <th class="px-8 py-6">Akademik</th>
-                    <th class="px-8 py-6">Penulis</th>
-                    <th class="px-8 py-6">Status Validasi</th>
+                    <th class="hidden lg:table-cell px-8 py-6">Akademik</th>
+                    <th class="hidden md:table-cell px-8 py-6">Penulis</th>
+                    <th class="hidden sm:table-cell px-8 py-6">Status Validasi</th>
                     <th class="px-10 py-6 text-center">Tindakan</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50">
+            <tbody class="divide-y divide-gray-200">
                 <?php if (empty($questions)): ?>
                 <tr>
                     <td colspan="5" class="px-10 py-24 text-center">
@@ -192,10 +192,24 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                 </div>
+                                <!-- Mobile only extra info -->
+                                <div class="mt-3 flex flex-wrap gap-2 lg:hidden">
+                                    <span class="inline-block px-2 py-0.5 bg-gray-100 text-[9px] font-bold rounded-md uppercase tracking-tighter">Kelas <?php echo $q['class_name']; ?></span>
+                                    <span class="inline-block px-2 py-0.5 bg-gray-100 text-[9px] font-bold rounded-md uppercase tracking-tighter <?php echo $q['difficulty'] == 'Sulit' ? 'border border-red-100 text-red-500' : ($q['difficulty'] == 'Sedang' ? 'border border-orange-100 text-orange-500' : 'border border-green-100 text-green-500'); ?>">
+                                        <?php echo $q['difficulty']; ?>
+                                    </span>
+                                    <span class="md:hidden inline-block px-2 py-0.5 bg-gray-100 text-[9px] font-bold rounded-md uppercase tracking-tighter">
+                                        Oleh: <?php echo $q['uploader_name']; ?>
+                                    </span>
+                                    <span class="sm:hidden flex items-center space-x-1 px-2 py-0.5 bg-gray-100 text-[9px] font-bold rounded-md uppercase tracking-tighter <?php echo $q['status'] == STATUS_VERIFIED ? 'text-green-600' : ($q['status'] == STATUS_REVIEW ? 'text-yellow-600' : 'text-gray-400'); ?>">
+                                        <div class="w-1.5 h-1.5 rounded-full <?php echo $q['status'] == STATUS_VERIFIED ? 'bg-green-500' : ($q['status'] == STATUS_REVIEW ? 'bg-yellow-500' : 'bg-gray-300'); ?>"></div>
+                                        <span><?php echo $q['status']; ?></span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-8 py-7">
+                    <td class="hidden lg:table-cell px-8 py-7">
                         <div class="space-y-1.5">
                             <p class="text-xs font-bold text-gray-700">Kelas <?php echo $q['class_name']; ?></p>
                             <span class="inline-block px-2 py-0.5 bg-gray-100 text-[9px] font-bold rounded-md uppercase tracking-tighter <?php echo $q['difficulty'] == 'Sulit' ? 'border border-red-100 text-red-500' : ($q['difficulty'] == 'Sedang' ? 'border border-orange-100 text-orange-500' : 'border border-green-100 text-green-500'); ?>">
@@ -203,13 +217,13 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
                             </span>
                         </div>
                     </td>
-                    <td class="px-8 py-7">
+                    <td class="hidden md:table-cell px-8 py-7">
                         <div class="flex items-center text-xs font-semibold text-gray-700">
                             <div class="w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-[10px] mr-2"><?php echo strtoupper(substr($q['uploader_name'], 0, 1)); ?></div>
                             <?php echo $q['uploader_name']; ?>
                         </div>
                     </td>
-                    <td class="px-8 py-7">
+                    <td class="hidden sm:table-cell px-8 py-7">
                         <div class="flex items-center space-x-2">
                              <div class="w-2 h-2 rounded-full <?php 
                                 echo $q['status'] == STATUS_VERIFIED ? 'bg-green-500' : ($q['status'] == STATUS_REVIEW ? 'bg-yellow-500' : 'bg-gray-300'); 

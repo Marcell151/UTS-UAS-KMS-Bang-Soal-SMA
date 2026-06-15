@@ -72,13 +72,29 @@ $notifications = $stmt_notif_list->fetchAll();
     </style>
 </head>
 <body class="bg-[#F8FAFC]">
+    <!-- Mobile sidebar backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden lg:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
     <div class="flex min-h-screen">
         <?php include 'sidebar.php'; ?>
         
-        <div class="flex-1">
-            <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-8 sticky top-0 z-50">
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+                <!-- Hamburger Menu Button -->
+                <button onclick="toggleSidebar()" class="p-2 -ml-2 mr-2 text-gray-500 hover:bg-gray-50 hover:text-primary rounded-xl transition duration-200 focus:outline-none">
+                    <!-- Mobile Hamburger -->
+                    <svg id="icon-burger" class="w-6 h-6 lg:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <!-- Desktop Arrow -->
+                    <svg id="icon-arrow" class="w-6 h-6 hidden lg:block transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <script>
+                    if (window.innerWidth >= 1024 && localStorage.getItem('sidebarPinned') === 'false') {
+                        document.getElementById('icon-arrow').classList.add('rotate-180');
+                    }
+                </script>
+                
                 <!-- Topbar Actions -->
-                <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-4 lg:space-x-6">
                     <!-- Notifications Bell -->
                     <div class="relative group">
                         <button class="p-2.5 text-gray-400 hover:bg-blue-50 hover:text-primary rounded-xl transition duration-200 relative">
@@ -91,7 +107,7 @@ $notifications = $stmt_notif_list->fetchAll();
                         </button>
                         
                         <!-- Notifications Dropdown -->
-                        <div class="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-[32px] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2">
+                        <div class="absolute right-[-20px] sm:right-0 mt-2 w-[280px] sm:w-80 bg-white border border-gray-100 rounded-[32px] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 p-2">
                             <div class="p-6 border-b border-gray-50 flex justify-between items-center">
                                 <h4 class="text-xs font-bold text-gray-900 uppercase tracking-widest">Internal Alerts</h4>
                                 <span class="text-[9px] bg-blue-50 text-primary px-2 py-0.5 rounded-lg font-bold"><?php echo $unreadCount; ?> NEW</span>
@@ -113,12 +129,12 @@ $notifications = $stmt_notif_list->fetchAll();
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-3 border-l pl-6 border-gray-100">
-                        <div class="text-right">
+                    <div class="flex items-center space-x-3 border-l pl-4 sm:pl-6 border-gray-100">
+                        <div class="text-right hidden sm:block">
                             <p class="text-sm font-semibold text-gray-900"><?php echo $_SESSION['full_name']; ?></p>
                             <p class="text-xs text-gray-500 uppercase font-bold tracking-widest"><?php echo $_SESSION['role_name']; ?></p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
                             <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
                         </div>
                     </div>

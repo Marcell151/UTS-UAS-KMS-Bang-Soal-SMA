@@ -63,7 +63,7 @@ $topics = $stmt->fetchAll();
 <?php endif; ?>
 
 <div class="bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden mb-12">
-    <div class="p-8 border-b border-gray-50 bg-gray-50/30 text-[10px] font-bold text-gray-400 uppercase tracking-widest flex px-12">
+    <div class="hidden md:flex p-8 border-b border-gray-50 bg-gray-50/30 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-12">
         <div class="flex-1">Topik & Konteks Diskusi</div>
         <div class="w-32 text-center">Interaksi</div>
         <div class="w-64 text-right">Inisiator</div>
@@ -77,28 +77,28 @@ $topics = $stmt->fetchAll();
         </div>
         <?php endif; ?>
         <?php foreach ($topics as $t): ?>
-        <a href="forum-detail.php?id=<?php echo $t['id']; ?>" class="px-12 py-8 flex items-center hover:bg-gray-50 transition-all duration-300 group">
+        <a href="forum-detail.php?id=<?php echo $t['id']; ?>" class="px-6 md:px-12 py-6 md:py-8 flex flex-col md:flex-row md:items-center hover:bg-gray-50 transition-all duration-300 group space-y-4 md:space-y-0">
             <div class="flex-1">
-                <h4 class="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight mb-2"><?php echo $t['title']; ?></h4>
-                <div class="flex items-center space-x-3 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                <h4 class="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight mb-2 break-words"><?php echo $t['title']; ?></h4>
+                <div class="flex flex-wrap items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                     <span><?php echo date('d M Y', strtotime($t['created_at'])); ?></span>
-                    <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span class="hidden md:inline-block w-1 h-1 rounded-full bg-gray-300"></span>
                     <span>Knowledge Thread #<?php echo $t['id']; ?></span>
                 </div>
             </div>
-            <div class="w-32 text-center">
+            <div class="md:w-32 md:text-center">
                 <span class="inline-flex items-center px-4 py-2 bg-white bg-opacity-50 text-xs font-bold text-primary rounded-2xl border border-blue-50 shadow-sm">
                     <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path></svg>
                     <?php echo $t['reply_count']; ?>
                 </span>
             </div>
-            <div class="w-64 text-right flex items-center justify-end space-x-4">
-                <div>
-                     <p class="text-xs font-bold text-gray-800 leading-none"><?php echo $t['full_name']; ?></p>
-                     <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1 italic"><?php echo $t['role_name']; ?></p>
-                </div>
-                <div class="w-12 h-12 rounded-[18px] bg-blue-50 text-primary flex items-center justify-center font-bold text-sm shadow-inner group-hover:scale-110 transition-transform">
+            <div class="flex items-center space-x-4 md:w-64 md:justify-end">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-[18px] bg-blue-50 text-primary flex items-center justify-center font-bold text-sm shadow-inner group-hover:scale-110 transition-transform shrink-0">
                     <?php echo strtoupper(substr($t['full_name'], 0, 1)); ?>
+                </div>
+                <div class="md:text-right">
+                     <p class="text-xs font-bold text-gray-800 leading-none truncate"><?php echo $t['full_name']; ?></p>
+                     <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1 italic"><?php echo $t['role_name']; ?></p>
                 </div>
             </div>
         </a>

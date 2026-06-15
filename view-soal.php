@@ -110,14 +110,14 @@ $progress = 33; // Draft
 if ($q['status'] == STATUS_REVIEW) $progress = 66;
 if ($q['status'] == STATUS_VERIFIED) $progress = 100;
 ?>
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
     <a href="bank-soal.php" class="flex items-center text-sm font-bold text-gray-500 hover:text-primary transition group">
         <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         Kembali ke Koleksi Soal
     </a>
     
     <?php if ($q['uploader_id'] == $identityId || hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
-    <div class="flex items-center space-x-3">
+    <div class="flex flex-wrap items-center gap-3">
         <a href="edit-soal.php?id=<?php echo $id; ?>" class="flex items-center text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 transition-all bg-blue-50 px-5 py-2.5 rounded-xl border border-blue-100">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             Edit / Revisi
@@ -141,10 +141,10 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
     <div class="lg:col-span-2 space-y-8">
         <!-- Main Content -->
         <div class="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
-            <div class="p-8 border-b border-gray-100 flex justify-between items-start bg-gradient-to-r from-white to-gray-50">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-900 leading-tight"><?php echo $q['title']; ?></h2>
-                    <div class="flex items-center space-x-4 mt-4">
+            <div class="p-8 border-b border-gray-100 flex flex-col md:flex-row md:justify-between items-start bg-gradient-to-r from-white to-gray-50">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight break-words"><?php echo $q['title']; ?></h2>
+                    <div class="flex flex-wrap gap-2 mt-4">
                         <span class="px-3 py-1 bg-blue-50 text-sky-600 text-[10px] font-bold rounded-full uppercase tracking-widest"><?php echo $q['category_name']; ?></span>
                         <span class="px-3 py-1 bg-gray-50 text-gray-500 border border-gray-200 text-[10px] font-bold rounded-full uppercase tracking-widest">KELAS <?php echo $q['class_name']; ?></span>
                         <?php if (!empty($q['tags'])): ?>
@@ -154,7 +154,7 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                         <?php endif; ?>
                     </div>
                 </div>
-                <div class="text-right">
+                <div class="md:text-right shrink-0">
                     <span class="px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest <?php 
                         echo $q['status'] == STATUS_VERIFIED ? 'bg-green-50 text-green-600' : ($q['status'] == STATUS_REVIEW ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-100 text-gray-400'); 
                     ?>">
@@ -176,17 +176,17 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                 </div>
 
                 <?php if ($q['file_path']): ?>
-                <div class="flex items-center justify-between p-6 bg-blue-50 border border-blue-100 rounded-3xl mb-10 group hover:border-blue-300 transition-colors">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-6 bg-blue-50 border border-blue-100 rounded-3xl mb-10 group hover:border-blue-300 transition-colors space-y-4 sm:space-y-0">
                     <div class="flex items-center space-x-4">
-                        <div class="p-3 bg-white rounded-2xl text-primary shadow-sm group-hover:scale-110 transition-transform">
+                        <div class="p-3 bg-white rounded-2xl text-primary shadow-sm group-hover:scale-110 transition-transform shrink-0">
                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         </div>
-                        <div>
-                            <p class="font-bold text-gray-900"><?php echo $q['original_name']; ?></p>
+                        <div class="break-words max-w-[200px] sm:max-w-xs md:max-w-md">
+                            <p class="font-bold text-gray-900 truncate"><?php echo $q['original_name']; ?></p>
                             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest"><?php echo $q['file_type']; ?> Document</p>
                         </div>
                     </div>
-                    <a href="download.php?id=<?php echo $id; ?>" class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg shadow-blue-200">Unduh Soal</a>
+                    <a href="download.php?id=<?php echo $id; ?>" class="bg-primary text-white text-center px-8 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg shadow-blue-200">Unduh Soal</a>
                 </div>
                 <?php endif; ?>
 
@@ -251,10 +251,10 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                 <?php foreach ($discussions as $msg): ?>
                 <div class="flex space-x-4">
                     <div class="w-10 h-10 rounded-full bg-blue-100 text-primary flex items-center justify-center font-bold text-xs shrink-0"><?php echo strtoupper(substr($msg['full_name'], 0, 1)); ?></div>
-                    <div class="flex-1 bg-gray-50 rounded-3xl p-6 relative">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-bold text-gray-900"><?php echo $msg['full_name']; ?> <span class="text-[10px] text-gray-400 font-normal ml-2 tracking-widest uppercase italic"><?php echo $msg['role_name']; ?></span></span>
-                            <span class="text-[10px] text-gray-400">
+                    <div class="flex-1 bg-gray-50 rounded-3xl p-6 relative min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1 space-y-1 sm:space-y-0">
+                            <span class="text-sm font-bold text-gray-900 truncate"><?php echo $msg['full_name']; ?> <span class="text-[10px] text-gray-400 font-normal ml-2 tracking-widest uppercase italic"><?php echo $msg['role_name']; ?></span></span>
+                            <span class="text-[10px] text-gray-400 shrink-0">
                                 <?php echo date('d M, H:i', strtotime($msg['created_at'])); ?>
                                 <?php if (isset($msg['is_edited']) && $msg['is_edited']): ?>
                                     <i class="ml-1 text-gray-400">(diedit)</i>

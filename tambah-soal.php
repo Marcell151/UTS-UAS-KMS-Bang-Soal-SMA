@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Form Section -->
     <div class="lg:col-span-3">
         <div class="bg-white rounded-[48px] border border-gray-100 shadow-2xl shadow-blue-50 overflow-hidden mb-12">
-            <div class="bg-[#003366] p-12 text-white relative">
+            <div class="bg-[#003366] p-6 md:p-12 text-white relative">
                 <div class="relative z-10">
                     <span class="px-4 py-1.5 bg-white bg-opacity-10 text-white text-[10px] font-black rounded-full uppercase tracking-widest mb-4 inline-block">Knowledge Capture</span>
                     <h3 class="text-3xl font-black">Kontribusi Bank Soal</h3>
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <?php endif; ?>
 
-            <form action="" method="POST" enctype="multipart/form-data" class="p-12 space-y-10">
+            <form action="" method="POST" enctype="multipart/form-data" class="p-6 md:p-12 space-y-10">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div class="space-y-3">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Judul Soal / Nama Dokumen</label>
@@ -195,9 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="text-[9px] text-gray-400 mt-4 font-black uppercase tracking-widest">Wajib diisi sebagai dokumentasi pengetahuan institusional sekolah.</p>
                 </div>
 
-                <div class="flex items-center space-x-6 pt-10">
-                    <a href="bank-soal.php" class="px-10 py-5 text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-600 transition">Batalkan</a>
-                    <button type="submit" class="flex-1 px-12 py-6 bg-[#003366] text-white rounded-[32px] font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-2xl shadow-blue-100">Simpan Draft Aset</button>
+                <div class="flex flex-col sm:flex-row items-center sm:space-x-6 space-y-4 sm:space-y-0 pt-10">
+                    <a href="bank-soal.php" class="w-full sm:w-auto px-10 py-5 text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-gray-600 transition text-center">Batalkan</a>
+                    <button type="submit" class="flex-1 w-full px-12 py-6 bg-[#003366] text-white rounded-[32px] font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition-all duration-300 shadow-2xl shadow-blue-100 break-words">Simpan Draft Aset</button>
                 </div>
             </form>
         </div>
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Sidebar Reference -->
     <div class="space-y-10">
-        <div class="bg-gray-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden group">
+        <div class="bg-gray-900 rounded-[48px] p-6 md:p-10 text-white shadow-2xl relative overflow-hidden group">
             <div class="absolute top-0 right-0 w-32 h-32 bg-[#003366] opacity-30 rounded-full blur-3xl"></div>
             <h4 class="text-[11px] font-black text-blue-400 uppercase tracking-[0.3em] mb-10 relative z-10">Juknis Akademik</h4>
             
@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <div class="bg-red-50 rounded-[40px] p-10 border border-red-100 relative overflow-hidden group">
+        <div class="bg-red-50 rounded-[40px] p-6 md:p-10 border border-red-100 relative overflow-hidden group">
             <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-red-600 opacity-5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
             <h5 class="text-[10px] font-black text-red-600 uppercase tracking-[0.2em] mb-4">Butuh Bantuan?</h5>
             <p class="text-[11px] text-gray-600 leading-relaxed mb-8 opacity-80">Jika ada kendala dalam proses entry soal, silakan diskusikan di forum KMS.</p>

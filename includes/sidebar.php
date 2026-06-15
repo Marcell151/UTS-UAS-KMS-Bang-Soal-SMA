@@ -3,7 +3,7 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 $role = $_SESSION['role_name'];
 ?>
-<aside class="w-80 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen shadow-sm">
+<aside id="sidebar" class="w-80 bg-white border-r border-gray-100 flex flex-col fixed lg:sticky top-0 h-screen shadow-sm z-50 transform -translate-x-full lg:translate-x-0 transition-all duration-300">
     <div class="p-10 flex flex-col items-center border-b border-gray-50">
         <div class="relative mb-6">
             <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-2xl shadow-blue-100 border border-gray-50 p-4">
@@ -75,3 +75,9 @@ $role = $_SESSION['role_name'];
         </a>
     </div>
 </aside>
+<script>
+    // Apply initial state from localStorage to avoid flashing
+    if (window.innerWidth >= 1024 && localStorage.getItem('sidebarPinned') === 'false') {
+        document.getElementById('sidebar').style.marginLeft = '-20rem';
+    }
+</script>

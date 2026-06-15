@@ -101,12 +101,12 @@ $all_teachers = $stmt->fetchAll();
         .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
     </style>
 </head>
-<body class="bg-[#F8FAFC] flex items-center justify-center min-h-screen p-6 relative overflow-hidden">
+<body class="bg-[#F8FAFC] flex flex-col min-h-screen p-6 relative overflow-x-hidden">
     <!-- Decorative Accents -->
     <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-100 rounded-full blur-[120px] opacity-40"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-50 rounded-full blur-[120px] opacity-40"></div>
 
-    <div class="max-w-md w-full relative z-10">
+    <div class="max-w-md w-full relative z-10 m-auto py-8">
         <div class="text-center mb-12">
             <div class="inline-flex items-center justify-center w-32 h-32 bg-white rounded-[40px] shadow-2xl shadow-blue-100 mb-8 p-3 border border-gray-50">
                 <img src="upload/logo/Logo.png" alt="Logo Kalam Kudus" class="w-full h-auto object-contain">
