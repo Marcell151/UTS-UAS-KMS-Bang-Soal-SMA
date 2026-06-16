@@ -95,21 +95,28 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
 </div>
 
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+    <?php
+    $buildUrl = function($key, $val) {
+        $params = $_GET;
+        $params[$key] = $val;
+        return 'bank-soal.php?' . http_build_query($params);
+    };
+    ?>
     <div class="flex space-x-4">
-        <a href="bank-soal.php?archived=0" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 0 ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
+        <a href="<?php echo $buildUrl('archived', 0); ?>" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 0 ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
             Soal Aktif
         </a>
-        <a href="bank-soal.php?archived=1" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 1 ? 'bg-gray-800 text-white shadow-lg shadow-gray-300' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
+        <a href="<?php echo $buildUrl('archived', 1); ?>" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 1 ? 'bg-gray-800 text-white shadow-lg shadow-gray-300' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
             Diarsipkan
         </a>
     </div>
     
     <?php if (hasRoleId([ROLE_GURU])): ?>
     <div class="flex bg-white rounded-full p-1 border border-gray-100 shadow-sm">
-        <a href="bank-soal.php?ownership=&archived=<?php echo $archived_filter; ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter != 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
+        <a href="<?php echo $buildUrl('ownership', ''); ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter != 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
             Semua Soal
         </a>
-        <a href="bank-soal.php?ownership=saya&archived=<?php echo $archived_filter; ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter == 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
+        <a href="<?php echo $buildUrl('ownership', 'saya'); ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter == 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
             Hanya Soal Saya
         </a>
     </div>

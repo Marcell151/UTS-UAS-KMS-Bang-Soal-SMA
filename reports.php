@@ -104,6 +104,7 @@ $topContributors = $stmt->fetchAll();
     </div>
 </div>
 
+<?php if (hasRoleId([ROLE_ADMIN_SISTEM, ROLE_KEPSEK])): ?>
 <div class="mt-12 bg-white rounded-[56px] border border-gray-100 shadow-xl p-12 overflow-hidden">
     <div class="flex justify-between items-center mb-10">
         <div>
@@ -150,5 +151,6 @@ $topContributors = $stmt->fetchAll();
         </table>
     </div>
 </div>
+<?php endif; ?>
 
 <?php require_once 'includes/footer.php'; ?>

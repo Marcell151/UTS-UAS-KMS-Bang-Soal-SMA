@@ -296,9 +296,6 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                 </div>
             </form>
             <?php else: ?>
-            <div class="mt-8 pt-8 border-t border-gray-100">
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center italic">Kepala Sekolah memiliki akses verifikator (Hanya Baca/Verifikasi).</p>
-            </div>
             <?php endif; ?>
         </div>
     </div>

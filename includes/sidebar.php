@@ -59,7 +59,7 @@ $role = $_SESSION['role_name'];
             <span class="text-sm font-bold">Template & SOP</span>
         </a>
 
-        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
+        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM, ROLE_KEPSEK])): ?>
         <p class="px-6 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mt-8 mb-4">Administrasi</p>
         <a href="reports.php" class="flex items-center px-6 py-3.5 space-x-3 rounded-2xl transition-all duration-300 <?php echo $current_page == 'reports.php' ? 'bg-[#003366] text-white shadow-lg shadow-blue-100' : 'text-gray-500 hover:bg-gray-50 hover:pl-8'; ?>">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
