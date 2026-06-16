@@ -295,7 +295,6 @@ if ($q['status'] == STATUS_VERIFIED) $progress = 100;
                     <button type="submit" name="post_comment" class="bg-primary text-white px-8 py-3 rounded-2xl font-bold hover:bg-black transition shadow-lg">Posting Komentar</button>
                 </div>
             </form>
-            <?php else: ?>
             <?php endif; ?>
         </div>
     </div>
