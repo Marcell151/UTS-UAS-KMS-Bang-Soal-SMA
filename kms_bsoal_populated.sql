@@ -411,7 +411,7 @@ CREATE TABLE `staff` (
 
 LOCK TABLES `staff` WRITE;
 /*!40000 ALTER TABLE `staff` DISABLE KEYS */;
-INSERT INTO `staff` VALUES (1,1,'admin','admin123','Superadmin Sistem',1,'2026-04-14 07:43:29'),(2,2,'administrasi','admin123','Admin Akademik (Administrasi)',2,'2026-04-14 07:43:29'),(3,3,'kepsek','admin123','Drs. H. M. Husain (Kepsek)',4,'2026-04-14 07:43:29');
+INSERT INTO `staff` VALUES (1,1,'admin','admin123','Superadmin Sistem',1,'2026-04-14 07:43:29'),(2,2,'administrasi','admin123','Admin Akademik (Administrasi)',2,'2026-04-14 07:43:29'),(3,3,'kepsek','admin123','Drs. Yohanes Darsono (Kepsek)',4,'2026-04-14 07:43:29');
 /*!40000 ALTER TABLE `staff` ENABLE KEYS */;
 UNLOCK TABLES;
 
