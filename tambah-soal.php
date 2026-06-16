@@ -18,7 +18,7 @@ $stmt = $pdo->query("SELECT * FROM classes ORDER BY name ASC");
 $classes = $stmt->fetchAll();
 
 // Fetch SOPs and Templates for reference sidebar
-$sops_ref = $pdo->query("SELECT * FROM kms_explicit ORDER BY type DESC, created_at DESC LIMIT 5")->fetchAll();
+$sops_ref = $pdo->query("SELECT * FROM kms_explicit WHERE is_archived = 0 ORDER BY type DESC, created_at DESC LIMIT 5")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_admin->execute([ROLE_ADMIN_AKADEMIK]);
             $admins = $stmt_admin->fetchAll();
             foreach ($admins as $admin) {
-                addNotification($pdo, $admin['identity_id'], "Soal baru '$title' butuh review Anda.", "bank-soal.php?status=Review");
+                addNotification($pdo, $admin['identity_id'], "Soal baru '$title' butuh review Anda.", "view-soal.php?id=$question_id");
             }
 
             $pdo->commit();

@@ -61,7 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$question_id, $identityId, $old_status, $new_status, $notes]);
 
         // [NEW] Trigger Notification
-        if ($q_info && $q_info['uploader_id'] && $q_info['uploader_id'] != $identityId) {
+        if ($new_status == STATUS_REVIEW && $old_status == STATUS_DRAFT && $identityId == $q_info['uploader_id']) {
+            // Guru mengirim ulang ke Admin
+            $stmt_admin = $pdo->prepare("SELECT identity_id FROM staff WHERE role_id = ?");
+            $stmt_admin->execute([ROLE_ADMIN_AKADEMIK]);
+            $admins = $stmt_admin->fetchAll();
+            foreach ($admins as $admin) {
+                addNotification($pdo, $admin['identity_id'], "Soal '{$q_info['title']}' diajukan untuk direview.", "view-soal.php?id=$question_id");
+            }
+        } else if ($q_info && $q_info['uploader_id'] && $q_info['uploader_id'] != $identityId) {
+            // Admin mengubah status, beritahu pembuat soal
             addNotification($pdo, $q_info['uploader_id'], "Status soal '{$q_info['title']}' diperbarui menjadi $new_status.", "view-soal.php?id=$question_id");
         }
 

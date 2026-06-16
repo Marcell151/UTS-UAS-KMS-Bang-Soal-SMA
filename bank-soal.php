@@ -11,6 +11,8 @@ $category_filter = $_GET['category'] ?? '';
 $class_filter = $_GET['class'] ?? '';
 $diff_filter = $_GET['difficulty'] ?? '';
 $jenis_filter = $_GET['jenis_soal'] ?? '';
+$status_filter = $_GET['status'] ?? '';
+$ownership_filter = $_GET['ownership'] ?? '';
 $search_filter = trim($_GET['search'] ?? '');
 
 $archived_filter = isset($_GET['archived']) && $_GET['archived'] == '1' ? 1 : 0;
@@ -55,6 +57,14 @@ if ($jenis_filter) {
     $query .= " AND q.jenis_soal = ?";
     $params[] = $jenis_filter;
 }
+if ($status_filter) {
+    $query .= " AND q.status = ?";
+    $params[] = $status_filter;
+}
+if ($ownership_filter == 'saya') {
+    $query .= " AND q.uploader_id = ?";
+    $params[] = $identityId;
+}
 if ($search_filter) {
     $query .= " AND (q.title LIKE ? OR q.materi LIKE ? OR q.tags LIKE ?)";
     $params[] = "%$search_filter%";
@@ -84,18 +94,32 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
     <?php endif; ?>
 </div>
 
-<div class="flex space-x-4 mb-8">
-    <a href="bank-soal.php?archived=0" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 0 ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
-        Soal Aktif
-    </a>
-    <a href="bank-soal.php?archived=1" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 1 ? 'bg-gray-800 text-white shadow-lg shadow-gray-300' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
-        Diarsipkan
-    </a>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+    <div class="flex space-x-4">
+        <a href="bank-soal.php?archived=0" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 0 ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
+            Soal Aktif
+        </a>
+        <a href="bank-soal.php?archived=1" class="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all <?php echo $archived_filter == 1 ? 'bg-gray-800 text-white shadow-lg shadow-gray-300' : 'bg-white text-gray-400 border border-gray-100 hover:bg-gray-50'; ?>">
+            Diarsipkan
+        </a>
+    </div>
+    
+    <?php if (hasRoleId([ROLE_GURU])): ?>
+    <div class="flex bg-white rounded-full p-1 border border-gray-100 shadow-sm">
+        <a href="bank-soal.php?ownership=&archived=<?php echo $archived_filter; ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter != 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
+            Semua Soal
+        </a>
+        <a href="bank-soal.php?ownership=saya&archived=<?php echo $archived_filter; ?>" class="px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all <?php echo $ownership_filter == 'saya' ? 'bg-yellow-100 text-yellow-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'; ?>">
+            Hanya Soal Saya
+        </a>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Advanced Filters -->
 <form action="" method="GET" class="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm mb-12">
     <input type="hidden" name="archived" value="<?php echo $archived_filter; ?>">
+    <input type="hidden" name="ownership" value="<?php echo htmlspecialchars($ownership_filter); ?>">
     
     <!-- Search Bar -->
     <div class="mb-8">
@@ -145,6 +169,17 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
                 <option value="Praktikum" <?php echo $jenis_filter == 'Praktikum' ? 'selected' : ''; ?>>Praktikum</option>
             </select>
         </div>
+        <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM, ROLE_KEPSEK])): ?>
+        <div class="flex-1 min-w-[150px]">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Status Validasi</label>
+            <select name="status" class="w-full px-6 py-3.5 bg-gray-50 border-none rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner font-bold">
+                <option value="">Semua Status</option>
+                <option value="<?php echo STATUS_DRAFT; ?>" <?php echo $status_filter == STATUS_DRAFT ? 'selected' : ''; ?>>Draft</option>
+                <option value="<?php echo STATUS_REVIEW; ?>" <?php echo $status_filter == STATUS_REVIEW ? 'selected' : ''; ?>>Perlu Review</option>
+                <option value="<?php echo STATUS_VERIFIED; ?>" <?php echo $status_filter == STATUS_VERIFIED ? 'selected' : ''; ?>>Verified</option>
+            </select>
+        </div>
+        <?php endif; ?>
         <button type="submit" class="px-10 py-3.5 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-black transition shadow-lg shrink-0">Terapkan Filter</button>
     </div>
 </form>
@@ -180,7 +215,15 @@ $classes = $pdo->query("SELECT * FROM classes ORDER BY name ASC")->fetchAll();
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             </div>
                             <div>
-                                <p class="text-base font-bold text-gray-900 leading-tight mb-1"><?php echo $q['title']; ?></p>
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <p class="text-base font-bold text-gray-900 leading-tight"><?php echo $q['title']; ?></p>
+                                    <?php if ($q['uploader_id'] == $identityId): ?>
+                                    <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-[9px] font-black rounded border border-yellow-200 uppercase tracking-tighter shrink-0">Soal Saya</span>
+                                    <?php endif; ?>
+                                    <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM]) && $q['status'] == STATUS_REVIEW): ?>
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-[9px] font-black rounded border border-red-200 uppercase tracking-tighter shrink-0 animate-pulse">Butuh Tindakan</span>
+                                    <?php endif; ?>
+                                </div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest"><span class="text-primary font-black">[<?php echo $q['category_code']; ?>]</span> <?php echo $q['category_name']; ?> • <?php echo $q['materi']; ?></p>
                                 <div class="mt-1 flex flex-wrap gap-2">
                                     <span class="inline-block px-2 py-0.5 bg-teal-50 border border-teal-100 text-teal-600 text-[9px] font-black rounded-md uppercase tracking-tighter">

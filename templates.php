@@ -47,8 +47,10 @@ if (isset($_POST['upload_kms']) && hasRoleId([ROLE_ADMIN_AKADEMIK])) {
 }
 
 // Fetch KMS Documents
-$templates = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'Template' ORDER BY created_at DESC")->fetchAll();
-$sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY created_at DESC")->fetchAll();
+$is_viewing_archive = isset($_GET['view']) && $_GET['view'] == 'archive';
+$archived_status = $is_viewing_archive ? 1 : 0;
+$templates = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'Template' AND is_archived = $archived_status ORDER BY created_at DESC")->fetchAll();
+$sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' AND is_archived = $archived_status ORDER BY created_at DESC")->fetchAll();
 ?>
 
 <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
@@ -56,11 +58,24 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
         <h3 class="text-3xl font-bold text-gray-900 leading-none">Pusat Pengetahuan Eksplisit</h3>
         <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mt-3 italic">SMA Kristen Kalam Kudus Malang • SOP & Template Resmi</p>
     </div>
-    <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK])): ?>
-    <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" class="bg-primary text-white px-8 py-4 rounded-[20px] font-bold hover:bg-black transition shadow-xl shadow-blue-100 flex items-center group">
-        <svg class="w-5 h-5 mr-3 group-hover:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Upload SOP/Template
-    </button>
+    <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
+    <div class="flex space-x-3">
+        <?php if ($is_viewing_archive): ?>
+        <a href="templates.php" class="bg-gray-100 text-gray-600 px-6 py-4 rounded-[20px] font-bold hover:bg-gray-200 transition flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Kembali ke Aktif
+        </a>
+        <?php else: ?>
+        <a href="templates.php?view=archive" class="bg-red-50 text-red-500 border border-red-100 px-6 py-4 rounded-[20px] font-bold hover:bg-red-100 transition flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            Lihat Arsip
+        </a>
+        <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" class="bg-primary text-white px-6 py-4 rounded-[20px] font-bold hover:bg-black transition shadow-xl shadow-blue-100 flex items-center group">
+            <svg class="w-5 h-5 mr-2 group-hover:rotate-45 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Upload Baru
+        </button>
+        <?php endif; ?>
+    </div>
     <?php endif; ?>
 </div>
 
@@ -92,9 +107,22 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
                         <p class="text-[9px] text-gray-400 uppercase tracking-widest font-bold mt-1">Uploaded: <?php echo date('d M Y', strtotime($tmpl['created_at'])); ?></p>
                     </div>
                 </div>
-                <a href="upload/<?php echo $tmpl['file_path']; ?>" download class="bg-white text-primary hover:bg-primary hover:text-white border border-blue-100 p-3 rounded-xl transition-all duration-300 shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </a>
+                <div class="flex space-x-2">
+                    <a href="upload/<?php echo $tmpl['file_path']; ?>" download class="bg-white text-primary hover:bg-primary hover:text-white border border-blue-100 p-3 rounded-xl transition-all duration-300 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </a>
+                    <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
+                        <?php if ($is_viewing_archive): ?>
+                        <a href="actions/unarchive_explicit.php?id=<?php echo $tmpl['id']; ?>" onclick="return confirm('Pulihkan template ini ke daftar aktif?');" class="bg-white text-green-500 hover:bg-green-500 hover:text-white border border-green-100 p-3 rounded-xl transition-all duration-300 shadow-sm" title="Pulihkan">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </a>
+                        <?php else: ?>
+                        <a href="actions/archive_explicit.php?id=<?php echo $tmpl['id']; ?>" onclick="return confirm('Arsipkan template ini? Template tidak akan terlihat lagi oleh publik.');" class="bg-white text-red-500 hover:bg-red-500 hover:text-white border border-red-100 p-3 rounded-xl transition-all duration-300 shadow-sm" title="Arsipkan">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -129,9 +157,22 @@ $sops = $pdo->query("SELECT * FROM kms_explicit WHERE type = 'SOP' ORDER BY crea
                         <p class="text-[9px] text-gray-600 font-bold uppercase tracking-widest mt-1">Official Document • Published: <?php echo date('d M Y', strtotime($sop['created_at'])); ?></p>
                     </div>
                 </div>
-                <a href="upload/<?php echo $sop['file_path']; ?>" download class="bg-gray-800 text-white hover:bg-blue-600 p-2.5 rounded-xl transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </a>
+                <div class="flex space-x-2">
+                    <a href="upload/<?php echo $sop['file_path']; ?>" download class="bg-gray-800 text-white hover:bg-blue-600 p-2.5 rounded-xl transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </a>
+                    <?php if (hasRoleId([ROLE_ADMIN_AKADEMIK, ROLE_ADMIN_SISTEM])): ?>
+                        <?php if ($is_viewing_archive): ?>
+                        <a href="actions/unarchive_explicit.php?id=<?php echo $sop['id']; ?>" onclick="return confirm('Pulihkan SOP ini ke daftar aktif?');" class="bg-gray-800 text-green-400 hover:bg-green-600 hover:text-white p-2.5 rounded-xl transition-all" title="Pulihkan">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </a>
+                        <?php else: ?>
+                        <a href="actions/archive_explicit.php?id=<?php echo $sop['id']; ?>" onclick="return confirm('Arsipkan SOP ini? SOP tidak akan terlihat lagi oleh publik.');" class="bg-gray-800 text-red-400 hover:bg-red-600 hover:text-white p-2.5 rounded-xl transition-all" title="Arsipkan">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
             <?php endforeach; ?>
         </div>
