@@ -129,15 +129,15 @@ $notifications = $stmt_notif_list->fetchAll();
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-3 border-l pl-4 sm:pl-6 border-gray-100">
+                    <a href="profile.php" class="flex items-center space-x-3 border-l pl-4 sm:pl-6 border-gray-100 group cursor-pointer">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-semibold text-gray-900"><?php echo $_SESSION['full_name']; ?></p>
+                            <p class="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors"><?php echo $_SESSION['full_name']; ?></p>
                             <p class="text-xs text-gray-500 uppercase font-bold tracking-widest"><?php echo $_SESSION['role_name']; ?></p>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0 group-hover:ring-4 group-hover:ring-blue-50 transition-all">
                             <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </header>
             <main class="p-8">

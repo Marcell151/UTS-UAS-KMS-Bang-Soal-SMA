@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch Teachers for dropdown (Master Guru Table)
-$stmt = $pdo->prepare("SELECT id, nip, full_name FROM teachers ORDER BY full_name ASC");
+// Fetch Teachers for dropdown (Master Guru Table) - Exclude archived
+$stmt = $pdo->prepare("SELECT id, nip, full_name FROM teachers WHERE is_archived = 0 ORDER BY full_name ASC");
 $stmt->execute();
 $all_teachers = $stmt->fetchAll();
 ?>

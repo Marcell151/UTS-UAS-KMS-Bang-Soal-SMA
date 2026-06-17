@@ -59,31 +59,32 @@ if (isset($_POST['save_teacher'])) {
     }
 }
 
-// Handle Delete (Option B: Keep questions but remove Master Record)
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+// Handle Archive (Soft Delete)
+if (isset($_GET['archive'])) {
+    $id = $_GET['archive'];
     try {
-        $pdo->beginTransaction();
-        
-        $stmt = $pdo->prepare("SELECT full_name FROM teachers WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE teachers SET is_archived = 1 WHERE id = ?");
         $stmt->execute([$id]);
-        $t_name = $stmt->fetchColumn();
-        
-        if ($t_name) {
-            $stmt = $pdo->prepare("DELETE FROM teachers WHERE id = ?");
-            $stmt->execute([$id]);
-            
-            $pdo->commit();
-            $message = 'Data Guru berhasil dihapus dari Master Data. Soal-soal tetap tersimpan sebagai anonim.';
-        }
+        $message = 'Data Guru berhasil diarsipkan (Soft Delete).';
     } catch (PDOException $e) {
-        $pdo->rollBack();
-        $error = 'Gagal menghapus data: ' . $e->getMessage();
+        $error = 'Gagal mengarsipkan data: ' . $e->getMessage();
+    }
+}
+
+// Handle Restore
+if (isset($_GET['restore'])) {
+    $id = $_GET['restore'];
+    try {
+        $stmt = $pdo->prepare("UPDATE teachers SET is_archived = 0 WHERE id = ?");
+        $stmt->execute([$id]);
+        $message = 'Data Guru berhasil dipulihkan dan diaktifkan kembali.';
+    } catch (PDOException $e) {
+        $error = 'Gagal memulihkan data: ' . $e->getMessage();
     }
 }
 
 // Fetch Master Teachers
-$teachers = $pdo->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchAll();
+$teachers = $pdo->query("SELECT * FROM teachers ORDER BY is_archived ASC, full_name ASC")->fetchAll();
 ?>
 
 <div class="mb-10 flex justify-between items-center italic">
@@ -124,13 +125,16 @@ $teachers = $pdo->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchA
             </thead>
             <tbody class="divide-y divide-gray-50">
                 <?php foreach ($teachers as $t): ?>
-                <tr class="hover:bg-gray-50 transition group">
+                <tr class="hover:bg-gray-50 transition group <?php echo $t['is_archived'] ? 'opacity-50 grayscale' : ''; ?>">
                     <td class="py-8 px-10 text-[11px] text-primary font-bold tracking-wider">
                         <?php echo $t['nip']; ?>
+                        <?php if ($t['is_archived']): ?>
+                            <span class="block mt-1 text-[9px] text-red-500 uppercase tracking-widest border border-red-200 bg-red-50 px-2 py-0.5 rounded inline-block">Diarsipkan</span>
+                        <?php endif; ?>
                     </td>
                     <td class="py-8 px-10 border-l-4 border-transparent group-hover:border-primary transition-all">
                         <div class="flex items-center space-x-4">
-                            <div class="w-10 h-10 bg-blue-50 text-primary rounded-xl flex items-center justify-center font-bold text-xs ring-4 ring-white shadow-sm"><?php echo strtoupper(substr($t['full_name'], 0, 1)); ?></div>
+                            <div class="w-10 h-10 <?php echo $t['is_archived'] ? 'bg-gray-100 text-gray-400' : 'bg-blue-50 text-primary'; ?> rounded-xl flex items-center justify-center font-bold text-xs ring-4 ring-white shadow-sm"><?php echo strtoupper(substr($t['full_name'], 0, 1)); ?></div>
                             <span class="text-base font-bold text-gray-900"><?php echo $t['full_name']; ?></span>
                         </div>
                     </td>
@@ -139,12 +143,18 @@ $teachers = $pdo->query("SELECT * FROM teachers ORDER BY full_name ASC")->fetchA
                     </td>
                     <td class="py-8 px-10">
                         <div class="flex items-center justify-center space-x-3">
-                            <button onclick="editTeacher(<?php echo htmlspecialchars(json_encode($t)); ?>)" class="p-3 bg-white border border-gray-100 rounded-xl text-blue-600 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                            <button onclick="editTeacher(<?php echo htmlspecialchars(json_encode($t)); ?>)" class="p-3 bg-white border border-gray-100 rounded-xl text-blue-600 hover:bg-blue-600 hover:text-white transition shadow-sm" title="Edit PIN/Data">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
-                            <a href="?delete=<?php echo $t['id']; ?>" onclick="return confirm('Hapus data guru dari master?')" class="p-3 bg-white border border-gray-100 rounded-xl text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <?php if (!$t['is_archived']): ?>
+                            <a href="?archive=<?php echo $t['id']; ?>" onclick="return confirm('Arsipkan guru ini? Mereka tidak akan bisa login lagi.')" class="p-3 bg-white border border-gray-100 rounded-xl text-yellow-600 hover:bg-yellow-600 hover:text-white transition shadow-sm" title="Arsipkan Guru">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                             </a>
+                            <?php else: ?>
+                            <a href="?restore=<?php echo $t['id']; ?>" onclick="return confirm('Pulihkan guru ini? Mereka akan bisa login kembali.')" class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 hover:bg-emerald-600 hover:text-white transition shadow-sm" title="Pulihkan Guru">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </a>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>

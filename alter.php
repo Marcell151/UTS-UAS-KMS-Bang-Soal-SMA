@@ -4,10 +4,10 @@ require_once 'config/database.php';
 
 try {
     // Menambahkan kolom jenis_soal
-    $pdo->exec("ALTER TABLE questions ADD COLUMN jenis_soal ENUM('Pilihan Ganda', 'Essay', 'Isian Singkat', 'Praktikum', 'Lainnya') DEFAULT 'Pilihan Ganda' AFTER tingkat_kognitif;");
+    $pdo->exec("ALTER TABLE teachers ADD COLUMN is_archived TINYINT(1) DEFAULT 0 AFTER pin;");
     
-    echo "<h2 style='color: green;'>Sukses! Kolom 'jenis_soal' berhasil ditambahkan ke tabel 'questions'.</h2>";
-    echo "<p>Silakan kembali ke <a href='bank-soal.php'>Bank Soal</a>.</p>";
+    echo "<h2 style='color: green;'>Sukses! Kolom 'is_archived' berhasil ditambahkan ke tabel 'teachers'.</h2>";
+    echo "<p>Silakan kembali ke <a href='teachers.php'>Master Guru</a>.</p>";
 
 } catch (PDOException $e) {
     echo "<h2 style='color: red;'>Error Database:</h2>";
