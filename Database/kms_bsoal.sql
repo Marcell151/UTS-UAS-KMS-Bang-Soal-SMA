@@ -486,6 +486,7 @@ CREATE TABLE `teachers` (
   `nip` varchar(20) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `pin` varchar(10) DEFAULT '123456',
+  `is_archived` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
