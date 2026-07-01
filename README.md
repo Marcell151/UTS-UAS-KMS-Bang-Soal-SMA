@@ -52,7 +52,14 @@ Ikuti langkah-langkah berikut untuk menjalankan sistem ini di komputer lokal And
     ```
 5.  **Jalankan Aplikasi**
     Buka *browser* dan akses: `http://localhost/kms-bank-soal` (atau sesuaikan dengan nama folder Anda).
-    *Gunakan kredensial pengujian yang terdapat di dalam file `dummy_accounts.txt` untuk mencoba berbagai peran (Guru/Admin).*
+    *Gunakan kredensial pengujian yang terdapat di dalam bagian `Akun (Demo)` untuk mencoba berbagai peran (Guru/Admin).*
+
+## Akun (Demo)
+
+1.  **Guru (Nama Guru):** 123456 (PIN)
+2.  **admin:** admin123
+3.  **administrasi:** admin123
+4.  **kepsek:** admin123
 
 ## Direktori Upload (Penting)
 
